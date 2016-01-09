@@ -156,12 +156,12 @@ def make_dataset_1():#一定期間の株価から翌日の株価を回帰予測
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
         #使わないリストは初期化
-        _open = []
-        _max = []
-        _min = []
-        _volume = []
-        _keisu = []
-        _shihon = []
+        del _open
+        del _max
+        del _min
+        del _volume
+        del _keisu
+        del _shihon
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
@@ -245,12 +245,12 @@ def make_dataset_2():#一定期間の株価から数日後の株価の値上が�
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
         #使わないリストは初期化
-        _open = []
-        _max = []
-        _min = []
-        _volume = []
-        _keisu = []
-        _shihon = []
+        del _open
+        del _max
+        del _min
+        del _volume
+        del _keisu
+        del _shihon
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
@@ -373,12 +373,12 @@ def make_dataset_3():#make_dataset2のテクニカル指標入力版
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
         #使わないリストは初期化
-        _open = []
-        _max = []
-        _min = []
-        _volume = []
-        _keisu = []
-        _shihon = []
+        del _open
+        del _max
+        del _min
+        del _volume
+        del _keisu
+        del _shihon
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
@@ -503,13 +503,13 @@ def make_dataset_4():#一定期間の株価から数日後の株価の最大値�
         _shihon = []
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
-        #使わないリストは初期化
-        _open = []
-        _max = []
-        _min = []
-        _volume = []
-        _keisu = []
-        _shihon = []
+        #使わないリストは削除
+        del _open
+        del _max
+        del _min
+        del _volume
+        del _keisu
+        del _shihon
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
