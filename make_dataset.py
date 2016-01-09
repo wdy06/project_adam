@@ -454,6 +454,99 @@ def make_dataset_3():#make_dataset2のテクニカル指標入力版
     print "label in train buy %d, sell %d, no_ope %d" % (buy, sell, no_ope)
     print 'finished!!'
         
+def make_dataset_4():#一定期間の株価から数日後の株価の最大値を回帰 
+    start_test_day = 20090105 
+    input_num = 70   
+    next_day = 5#何日後の値上がり率で判断するか
+    up_ratio = 5
+    down_ratio = -5    
+    
+    train_count = 0
+    test_count = 0
+    buy = 0
+    sell = 0
+    no_ope = 0
+    fw1 = open(t_folder + 'tmp_train.csv', 'w')
+    fw2 = open(t_folder + 'tmp_test.csv', 'w')
+    writer1 = csv.writer(fw1, lineterminator='\n')
+    writer2 = csv.writer(fw2, lineterminator='\n')
+    
+    files = os.listdir("./stockdata")
+    for k, f in enumerate(files):
+        print f, k
+        _time = []
+        _open = []
+        _max = []
+        _min = []
+        _close = []
+        _volume = []
+        _keisu = []
+        _shihon = []
+        filepath = "./stockdata/%s" % f
+        _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+        #start_test_dayでデータセットを分割
+        try:
+            iday = _time.index(start_test_day)
+        except:
+            print "can't find start_test_day"
+            continue#start_test_dayが見つからなければ次のファイルへ
+        trainlist = _close[:iday]
+        testlist = _close[iday:]
+        if len(trainlist) < input_num or len(testlist) < input_num:
+            continue
+        
+        datalist = trainlist
+        for i, price in enumerate(datalist):
+            inputlist = copy.copy(datalist[i:i + input_num])
+            
+            try:
+                now_price = datalist[i + input_num - 1]
+                predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            except:
+                continue#datalistが短すぎる場合は飛ばす
+            outputlist = []
+            outputlist.append((predic_price - now_price) / now_price)
+            
+
+            normalizationArray(inputlist,min(inputlist),max(inputlist))
+            
+            
+            writer1.writerow(inputlist + outputlist)#train.csvに書き込み
+            train_count = train_count + 1
+            if i + input_num + next_day == len(datalist):
+                break
+            
+       
+        #test data
+        #x_test = []
+        #y_test = []
+        datalist = testlist
+        for i, price in enumerate(datalist):
+            inputlist = copy.copy(datalist[i:i + input_num])
+            
+            try:
+                now_price = datalist[i + input_num - 1]
+                predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            except:
+                #print 'datalist too short'
+                continue#datalistが短すぎる場合は飛ばす
+            outputlist = []
+            outputlist.append((predic_price - now_price) / now_price)
+            
+            normalizationArray(inputlist,min(inputlist),max(inputlist))
+            
+            writer2.writerow(inputlist + outputlist)#train.csvに書き込み
+            test_count = test_count + 1
+            if i + input_num + next_day == len(datalist):
+                break
+                
+            
+    fw1.close()
+    fw2.close()
+    print "train_count = %d" % train_count
+    print "test_count = %d" % test_count
+    print "label in train buy %d, sell %d, no_ope %d" % (buy, sell, no_ope)
+    print 'finished!!'
 if __name__ == '__main__':
     print "start make dataset"
     
