@@ -98,7 +98,7 @@ class Regression_ShallowNN(chainer.FunctionSet):
         #x, t = Variable(x_data), Variable(y_data)#mnist
         h1 = F.sigmoid(self.fc1(x))
         h2 = F.sigmoid(self.fc2(h1))
-        y = F.softmax(self.fc3(h2))
+        y = self.fc3(h2)
         #最後はソフトマックスを通すのか？
         #print y.data, t.data
         #print y.data.shape, t.data.shape

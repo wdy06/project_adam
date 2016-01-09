@@ -69,9 +69,7 @@ output_num = 1
 batchsize = args.batchsize
 start_test_day = 20090105
 train_loss_list = []#学習のエラー値を格納
-train_acc_list = []
 test_loss_list = []
-test_acc_list = []
 
 print 'Regression'
 
@@ -161,7 +159,6 @@ for epoch in range(1,n_epoch + 1):
         
     # Learning loop
     perm = np.random.permutation(N)
-    sum_accuracy = 0
     sum_loss = 0
     for i in range(0, N, batchsize):
         x_batch = xp.asarray(x_train[perm[i:i + batchsize]])
@@ -170,7 +167,7 @@ for epoch in range(1,n_epoch + 1):
         count+=1
         
         optimizer.zero_grads()
-        loss, acc = model.forward(x_batch, y_batch)
+        loss = model.forward(x_batch, y_batch)
         loss.backward()
         optimizer.update()
         
@@ -184,35 +181,27 @@ for epoch in range(1,n_epoch + 1):
             print('graph generated')
 
         
-        #train_loss_list.append(loss.data)
-        #train_acc_list.append(acc.data)
         sum_loss += float(loss.data) * len(y_batch)
-        sum_accuracy += float(acc.data) * len(y_batch)
-        #print loss.data
-        #raw_input()
-    print('train mean loss={}, accuracy={}'.format(
-        sum_loss / N, sum_accuracy / N))
+        
+    print('train mean loss={}'.format(
+        sum_loss / N))
     train_loss_list.append(sum_loss / N)
-    train_acc_list.append(sum_accuracy / N)
    
     # evaluation
-    sum_accuracy = 0
     sum_loss = 0
     for i in range(0, N_test, batchsize):
         x_batch = xp.asarray(x_test[i:i + batchsize])
         y_batch = xp.asarray(y_test[i:i + batchsize])
         
-        loss, acc = model.forward(x_batch, y_batch, train=False)
+        loss = model.forward(x_batch, y_batch, train=False)
         
-        #test_loss_list.append(loss.data)
-        #test_acc_list.append(acc.data)
+        
         sum_loss += float(loss.data) * len(y_batch)
-        sum_accuracy += float(acc.data) * len(y_batch)
 
-    print('test  mean loss={}, accuracy={}'.format(
-        sum_loss / N_test, sum_accuracy / N_test))
+    print('test  mean loss={}'.format(
+        sum_loss / N_test))
     test_loss_list.append(sum_loss / N_test)
-    test_acc_list.append(sum_accuracy / N_test)
+    
     
     if epoch % 100 == 0:
         
@@ -222,32 +211,24 @@ for epoch in range(1,n_epoch + 1):
         plt.xlabel("epoch")
         plt.ylabel("loss")
         plt.grid()
-        plt.savefig(folder + "loss.png")
-        plt.close()
-        
-        plt.plot(train_acc_list, label ="train_acc")
-        plt.plot(test_acc_list, label = "test_acc")
-        plt.legend()#凡例を表示
-        plt.xlabel("epoch")
-        plt.ylabel("acc")
-        plt.grid()
         plt.title(args.experiment_name + ':' + model.modelname 
             + ', input:' + str(model.input_num) 
             + ', hidden:' + str(model.hidden_num) + ':' +  args.trainfile)
-        plt.savefig(folder + "acc.png")
+        plt.savefig(folder + "loss.png")
         plt.close()
+        
+        
         print 'save picture'
         
-        with open(folder + 'loss_acc.csv', 'wb') as oc:
+        with open(folder + 'loss.csv', 'wb') as oc:
             odata = []
             odata.append(train_loss_list)
             odata.append(test_loss_list)
-            odata.append(train_acc_list)
-            odata.append(test_acc_list)
+            
             odata = np.array(odata).transpose()
             writer = csv.writer(oc)
             writer.writerows(odata)
-            print 'save loss_acc.csv'
+            print 'save loss.csv'
             odata = []
             
     if epoch % 1000 == 0:
@@ -269,4 +250,3 @@ print "model saved"
 print "finished!!!"
 
 
-print "asdfasdf"
