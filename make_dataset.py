@@ -155,6 +155,13 @@ def make_dataset_1():#一定期間の株価から翌日の株価を回帰予測
         _shihon = []
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+        #使わないリストは初期化
+        _open = []
+        _max = []
+        _min = []
+        _volume = []
+        _keisu = []
+        _shihon = []
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
@@ -237,6 +244,13 @@ def make_dataset_2():#一定期間の株価から数日後の株価の値上が�
         _shihon = []
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+        #使わないリストは初期化
+        _open = []
+        _max = []
+        _min = []
+        _volume = []
+        _keisu = []
+        _shihon = []
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
@@ -275,9 +289,8 @@ def make_dataset_2():#一定期間の株価から数日後の株価の値上が�
                 else:
                     continue
             
-            norm_min = min(inputlist)
-            norm_max = max(inputlist)
-            normalizationArray(inputlist,norm_min,norm_max)
+
+            normalizationArray(inputlist,min(inputlist),max(inputlist))
             
             writer1.writerow(inputlist + outputlist)#train.csvに書き込み
             train_count = train_count + 1
@@ -310,9 +323,8 @@ def make_dataset_2():#一定期間の株価から数日後の株価の値上が�
                 else:
                     continue
             
-            norm_min = min(inputlist)
-            norm_max = max(inputlist)
-            normalizationArray(inputlist,norm_min,norm_max)
+
+            normalizationArray(inputlist,min(inputlist),max(inputlist))
             
             writer2.writerow(inputlist + outputlist)#train.csvに書き込み
             test_count = test_count + 1
@@ -360,6 +372,13 @@ def make_dataset_3():#make_dataset2のテクニカル指標入力版
         _shihon = []
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+        #使わないリストは初期化
+        _open = []
+        _max = []
+        _min = []
+        _volume = []
+        _keisu = []
+        _shihon = []
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
@@ -484,6 +503,13 @@ def make_dataset_4():#一定期間の株価から数日後の株価の最大値�
         _shihon = []
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+        #使わないリストは初期化
+        _open = []
+        _max = []
+        _min = []
+        _volume = []
+        _keisu = []
+        _shihon = []
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
