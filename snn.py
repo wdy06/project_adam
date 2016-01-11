@@ -20,7 +20,7 @@ class Classification_ShallowNN(chainer.FunctionSet):
         self.input_num = input_num
         self.hidden_num = hidden_num
         
-        super(ShallowNN, self).__init__(
+        super(Classification_ShallowNN, self).__init__(
             fc1=F.Linear(self.input_num, self.hidden_num),
             fc2=F.Linear(self.hidden_num, self.hidden_num),
             fc3=F.Linear(self.hidden_num,3)
@@ -67,7 +67,7 @@ class Regression_ShallowNN(chainer.FunctionSet):
         self.input_num = input_num
         self.hidden_num = hidden_num
         
-        super(ShallowNN, self).__init__(
+        super(Regression_ShallowNN, self).__init__(
             fc1=F.Linear(self.input_num, self.hidden_num),
             fc2=F.Linear(self.hidden_num, self.hidden_num),
             fc3=F.Linear(self.hidden_num,1)
@@ -77,7 +77,7 @@ class Regression_ShallowNN(chainer.FunctionSet):
         
     def forward(self, x_data, y_data, train=True):
         #print y_data
-        x, t = chainer.Variable(x_data), chainer.Variable(y_data.reshape(len(y_data),))
+        x, t = chainer.Variable(x_data), chainer.Variable(y_data)
         #x, t = Variable(x_data), Variable(y_data)#mnist
         h1 = F.sigmoid(self.fc1(x))
         #h1.data = h1.data / cuda.cupy.sum(h1.data)

@@ -108,6 +108,7 @@ y_test = []
 print 'train_file is ' + args.trainfile
 csvdata = open(t_folder + args.trainfile,'rb')
 reader = csv.reader(csvdata)
+print args.trainfile
 for row in reader:
     x_train.append(row[:model.input_num])
     y_train.append(row[-output_num:])
@@ -115,6 +116,7 @@ csvdata.close()
 print 'test_file is ' + args.testfile
 csvdata = open(t_folder + args.testfile,'rb')
 reader = csv.reader(csvdata)
+print args.testfile
 for row in reader:
     x_test.append(row[:model.input_num])
     y_test.append(row[-output_num:])
@@ -124,9 +126,9 @@ csvdata.close()
 
 #Classification
 x_train = np.array(x_train).astype(np.float32)
-y_train = np.array(y_train).astype(np.int32)
+y_train = np.array(y_train).astype(np.float32)
 x_test  = np.array(x_test).astype(np.float32)
-y_test  = np.array(y_test).astype(np.int32)
+y_test  = np.array(y_test).astype(np.float32)
 
 print "finished making dataset"
 

@@ -20,7 +20,7 @@ class Classification_DNN(chainer.FunctionSet):
         self.input_num = input_num
         self.hidden_num = hidden_num
         
-        super(DNN, self).__init__(
+        super(Classification_DNN, self).__init__(
             fc1=F.Linear(self.input_num, self.hidden_num),
             fc2=F.Linear(self.hidden_num, self.hidden_num),
             fc3=F.Linear(self.hidden_num, self.hidden_num),
@@ -72,7 +72,7 @@ class Regression_DNN(chainer.FunctionSet):
         self.input_num = input_num
         self.hidden_num = hidden_num
         
-        super(DNN, self).__init__(
+        super(Regression_DNN, self).__init__(
             fc1=F.Linear(self.input_num, self.hidden_num),
             fc2=F.Linear(self.hidden_num, self.hidden_num),
             fc3=F.Linear(self.hidden_num, self.hidden_num),
@@ -82,7 +82,7 @@ class Regression_DNN(chainer.FunctionSet):
         
     def forward(self, x_data, y_data, train=True):
         #print y_data
-        x, t = chainer.Variable(x_data), chainer.Variable(y_data.reshape(len(y_data),))
+        x, t = chainer.Variable(x_data), chainer.Variable(y_data)
         #x, t = Variable(x_data), Variable(y_data)#mnist
         h1 = F.dropout(F.relu(self.fc1(x)), train=train)
         #print h1.data
