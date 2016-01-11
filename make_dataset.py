@@ -473,20 +473,20 @@ def make_dataset_3():#make_dataset2のテクニカル指標入力版
     print "label in train buy %d, sell %d, no_ope %d" % (buy, sell, no_ope)
     print 'finished!!'
         
-def make_dataset_4():#一定期間の株価から数日後の株価の最大値を回帰 
+def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の最大値を回帰 
+    print 'make_dataset_4'
     start_test_day = 20090105 
-    input_num = 70   
+    input_num = inputnum   
     next_day = 5#何日後の値上がり率で判断するか
-    up_ratio = 5
-    down_ratio = -5    
+    #up_ratio = 5
+    #down_ratio = -5    
     
     train_count = 0
     test_count = 0
-    buy = 0
-    sell = 0
-    no_ope = 0
-    fw1 = open(t_folder + 'tmp_train.csv', 'w')
-    fw2 = open(t_folder + 'tmp_test.csv', 'w')
+    fpath1 = t_folder + 'train' + str(input_num) + '.csv'
+    fpath2 = t_folder + 'test' + str(input_num) + '.csv'
+    fw1 = open(fpath1, 'w')
+    fw2 = open(fpath2, 'w')
     writer1 = csv.writer(fw1, lineterminator='\n')
     writer2 = csv.writer(fw2, lineterminator='\n')
     
@@ -523,6 +523,9 @@ def make_dataset_4():#一定期間の株価から数日後の株価の最大値�
         
         datalist = trainlist
         for i, price in enumerate(datalist):
+            if i % 2 == 0:
+                #全部は多すぎるので半分
+                continue
             inputlist = copy.copy(datalist[i:i + input_num])
             
             try:
@@ -543,11 +546,12 @@ def make_dataset_4():#一定期間の株価から数日後の株価の最大値�
                 break
             
        
-        #test data
-        #x_test = []
-        #y_test = []
+        
         datalist = testlist
         for i, price in enumerate(datalist):
+            if i % 2 == 0:
+                #全部は多すぎるので半分
+                continue
             inputlist = copy.copy(datalist[i:i + input_num])
             
             try:
@@ -569,16 +573,25 @@ def make_dataset_4():#一定期間の株価から数日後の株価の最大値�
             
     fw1.close()
     fw2.close()
+    print 'save ' + str(fpath1)
+    print 'save ' + str(fpath2)
     print "train_count = %d" % train_count
     print "test_count = %d" % test_count
-    print "label in train buy %d, sell %d, no_ope %d" % (buy, sell, no_ope)
     print 'finished!!'
 if __name__ == '__main__':
     print "start make dataset"
     
-    make_dataset_2()
-    arrange_train_num("tmp_tech_train.csv", "train70.csv")
-    arrange_train_num("tmp_tech_test.csv", "test70.csv") 
+    make_dataset_4(20)
+    make_dataset_4(30)
+    make_dataset_4(40)
+    make_dataset_4(50)
+    make_dataset_4(60)
+    make_dataset_4(70)
+    make_dataset_4(80)
+    make_dataset_4(90)
+    make_dataset_4(100)
+    #arrange_train_num("tmp_tech_train.csv", "train70.csv")
+    #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
     #data_completion()
     print "finished make dataset"
