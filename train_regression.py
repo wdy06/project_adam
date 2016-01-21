@@ -111,7 +111,7 @@ reader = csv.reader(csvdata)
 print args.trainfile
 for row in reader:
     x_train.append(row[:model.input_num])
-    y_train.append(row[-output_num:])
+    y_train.append(row[-output_num-2:])
 csvdata.close()
 print 'test_file is ' + args.testfile
 csvdata = open(t_folder + args.testfile,'rb')
@@ -119,7 +119,7 @@ reader = csv.reader(csvdata)
 print args.testfile
 for row in reader:
     x_test.append(row[:model.input_num])
-    y_test.append(row[-output_num:])
+    y_test.append(row[-output_num-2:])
 csvdata.close()
 
 
