@@ -568,9 +568,9 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
             outputlist = []
             outputlist.append((predic_price - now_price) / now_price)
             
-            normalizationArray(inputlist,min(trainlist),max(trainlist)
+            normalizationArray(inputlist,min(trainlist),max(trainlist))
             
-            writer2.writerow(inputlist + outputlist)#train.csvに書き込み
+            writer2.writerow(inputlist + outputlist)#test.csvに書き込み
             test_count = test_count + 1
             if i + input_num + next_day == len(datalist):
                 break
@@ -585,7 +585,7 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
     print 'finished!!'
 if __name__ == '__main__':
     print "start make dataset"
-    
+    make_dataset_4(10)
     make_dataset_4(20)
     make_dataset_4(30)
     make_dataset_4(40)
