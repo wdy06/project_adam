@@ -526,6 +526,9 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
         if len(trainlist) < input_num or len(testlist) < input_num:
             continue
         
+        norm_min = min(trainlist)
+        norm_max = max(trainlist)
+        
         datalist = trainlist
         for i, price in enumerate(datalist):
             if i % 2 == 0:
@@ -540,9 +543,11 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
                 continue#datalistが短すぎる場合は飛ばす
             outputlist = []
             outputlist.append((predic_price - now_price) / now_price)
+            outputlist.append(norm_min)
+            outputlist.append(norm_max)
             
 
-            normalizationArray(inputlist,min(trainlist),max(trainlist))
+            normalizationArray(inputlist,norm_min,norm_max)
             
             
             writer1.writerow(inputlist + outputlist)#train.csvに書き込み
@@ -567,8 +572,10 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
                 continue#datalistが短すぎる場合は飛ばす
             outputlist = []
             outputlist.append((predic_price - now_price) / now_price)
+            outputlist.append(norm_min)
+            outputlist.append(norm_max)
             
-            normalizationArray(inputlist,min(trainlist),max(trainlist))
+            normalizationArray(inputlist,norm_min,norm_max)
             
             writer2.writerow(inputlist + outputlist)#test.csvに書き込み
             test_count = test_count + 1
