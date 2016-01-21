@@ -49,8 +49,13 @@ def normalizationArray(array,amin,amax):
     amax = float(amax)
     if amin != amax:
         for i,element in enumerate(array):
-            ret = (float(element) - amin) / (amax - amin)
-            array[i] = ret
+            if element > amax:
+                array[i] = 1
+            elif element < amin:
+                array[i] = 0
+            else:
+                ret = (float(element) - amin) / (amax - amin)
+                array[i] = ret
     #期間の最大最小が等しい場合はすべての要素を0.5とする
     elif amin == amax:
         for i,element in enumerate(array):
@@ -537,7 +542,7 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
             outputlist.append((predic_price - now_price) / now_price)
             
 
-            normalizationArray(inputlist,min(inputlist),max(inputlist))
+            normalizationArray(inputlist,min(trainlist),max(trainlist))
             
             
             writer1.writerow(inputlist + outputlist)#train.csvに書き込み
@@ -563,7 +568,7 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
             outputlist = []
             outputlist.append((predic_price - now_price) / now_price)
             
-            normalizationArray(inputlist,min(inputlist),max(inputlist))
+            normalizationArray(inputlist,min(trainlist),max(trainlist)
             
             writer2.writerow(inputlist + outputlist)#train.csvに書き込み
             test_count = test_count + 1
