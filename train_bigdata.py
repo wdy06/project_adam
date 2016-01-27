@@ -110,13 +110,15 @@ def read_data(path, num):
 def read_batch(path, randlist):
     batch = []
     for i in randlist:
-        line =  linecache.getline(path, i)
+        line =  linecache.getline(path, i+1)
         line = line.rstrip().split(",")
+        
         batch.append(line)
     linecache.clearcache()
     return batch
     
 def sprit_data(data):
+    
     #print (data)
     inputlist = data[:model.input_num]
     outputlist = data[-output_num-2:-2]
@@ -124,56 +126,39 @@ def sprit_data(data):
     outputlist = np.array(outputlist).astype(np.float32)
     return inputlist, outputlist
 
-def sprit_batch(batch):
-    batch = np.array(batch).astype(np.float32)
+def sprit_batch(listbatch):
+    #print ("test")
+    #print (len(listbatch))
+    batch = np.array(listbatch).astype(np.float32)
     x_batch = batch[:, :model.input_num]
     y_batch  =batch[:, -output_num-2:-2]
     return x_batch, y_batch
+    
 def feed_data():
     # Data feeder
-    i = 0
+    
     count = 0
-
-    x_batch = np.ndarray(
-        (args.batchsize, model.input_num), dtype=np.float32)
-    y_batch = np.ndarray((args.batchsize,output_num), dtype=np.float32)
-    val_x_batch = np.ndarray(
-        (args.batchsize, model.input_num), dtype=np.float32)
-    val_y_batch = np.ndarray((args.batchsize,output_num), dtype=np.float32)
-
-    batch_pool = [None] * args.batchsize
-    val_batch_pool = [None] * args.batchsize
     pool = multiprocessing.Pool(args.loaderjob)
     data_q.put('train')
     for epoch in six.moves.range(1, 1 + args.epoch):
         print('epoch', epoch, file=sys.stderr)
         print('learning rate', optimizer.lr, file=sys.stderr)
         perm = np.random.permutation(N)
-        for idx in perm:
-            line = pool.apply_async(read_data, (trainfile, idx))
-            batch_pool[i], y_batch[i] = sprit_data(line.get())
-            i += 1
-            print (i)
-            if i == args.batchsize:
-                for j, x in enumerate(batch_pool):
-                    x_batch[j] = x
-                data_q.put((x_batch.copy(), y_batch.copy()))
-                i = 0
 
+        for i in range(0, N, args.batchsize):
+            batch = pool.apply_async(read_batch, (trainfile, perm[i:i + args.batchsize]))
+            x_batch, y_batch = sprit_batch(batch.get())
+            data_q.put((x_batch, y_batch))
+            
             count += 1
             if count % 100000 == 0:
                 data_q.put('val')
-                j = 0
-                for l in range(N_test):
-                    line = pool.apply_async(read_data, (testfile, l))
-                    val_batch_pool[j], val_y_batch[j] = sprit_data(line.get())
-                    j += 1
-
-                    if j == args.val_batchsize:
-                        for k, x in enumerate(val_batch_pool):
-                            val_x_batch[k] = x
-                        data_q.put((val_x_batch.copy(), val_y_batch.copy()))
-                        j = 0
+                
+                for l in range(0, N_test, args.batchsize):
+                    val_batch = pool.apply_async(read_batch, (testfile, range(i, i + args.batchsize)))
+                    val_x_batch, val_y_batch = sprit_batch(val_batch.get())
+                    data_q.put((val_x_batch, val_y_batch))
+                    
                 data_q.put('train')
 
         optimizer.lr *= 0.97
@@ -186,7 +171,7 @@ def log_result():
     # Logger
     train_count = 0
     train_cur_loss = 0
-    train_cur_accuracy = 0
+    #train_cur_accuracy = 0
     begin_at = time.time()
     val_begin_at = None
     while True:
@@ -204,11 +189,11 @@ def log_result():
         elif result == 'val':
             print(file=sys.stderr)
             train = False
-            val_count = val_loss = val_accuracy = 0
+            val_count = val_loss  = 0
             val_begin_at = time.time()
             continue
 
-        loss, accuracy = result
+        loss = result
         if train:
             train_count += 1
             duration = time.time() - begin_at
@@ -219,16 +204,16 @@ def log_result():
                         datetime.timedelta(seconds=duration), throughput))
 
             train_cur_loss += loss
-            train_cur_accuracy += accuracy
+            #train_cur_accuracy += accuracy
             if train_count % 1000 == 0:
                 mean_loss = train_cur_loss / 1000
-                mean_error = 1 - train_cur_accuracy / 1000
+                #mean_error = 1 - train_cur_accuracy / 1000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'train', 'iteration': train_count,
-                                  'error': mean_error, 'loss': mean_loss}))
+                                   'loss': mean_loss}))
                 sys.stdout.flush()
                 train_cur_loss = 0
-                train_cur_accuracy = 0
+                #train_cur_accuracy = 0
         else:
             val_count += args.batchsize
             duration = time.time() - val_begin_at
@@ -239,13 +224,13 @@ def log_result():
                         datetime.timedelta(seconds=duration), throughput))
 
             val_loss += loss
-            val_accuracy += accuracy
+            #val_accuracy += accuracy
             if val_count == 50000:
                 mean_loss = val_loss * args.batchsize / 50000
-                mean_error = 1 - val_accuracy * args.batchsize / 50000
+                #mean_error = 1 - val_accuracy * args.batchsize / 50000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'val', 'iteration': train_count,
-                                  'error': mean_error, 'loss': mean_loss}))
+                                   'loss': mean_loss}))
                 sys.stdout.flush()
 
 
@@ -274,7 +259,7 @@ def train_loop():
 
         if train:
             optimizer.zero_grads()
-            loss, accuracy = model.forward(x, y)
+            loss = model.forward(x, y)
             loss.backward()
             optimizer.update()
 
@@ -287,11 +272,10 @@ def train_loop():
                 graph_generated = True
 
         else:
-            loss, accuracy = model.forward(x, y, train=False)
+            loss = model.forward(x, y, train=False)
 
-        res_q.put((float(loss.data),
-                   float(accuracy.data)))
-        del loss, accuracy, x, y
+        res_q.put(float(loss.data))
+        del loss, x, y
 
 # Invoke threads
 feeder = threading.Thread(target=feed_data)
