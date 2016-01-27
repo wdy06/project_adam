@@ -104,9 +104,7 @@ def read_data(path, num):
     # Data loading routine
     line = linecache.getline(path, num)
     line = line.rstrip().split(",")
-    
     linecache.clearcache()
-    #print (line)
     return line
     
 def sprit_data(data):
@@ -138,16 +136,12 @@ def feed_data():
         print('learning rate', optimizer.lr, file=sys.stderr)
         perm = np.random.permutation(N)
         for idx in perm:
-            #path, label = train_list[idx]
             line = pool.apply_async(read_data, (trainfile, idx))
-            #print (line)
             batch_pool[i], y_batch[i] = sprit_data(line.get())
-            #y_batch[i] = label
             i += 1
             print (i)
             if i == args.batchsize:
                 for j, x in enumerate(batch_pool):
-                    #x_batch[j] = x.get()
                     x_batch[j] = x
                 data_q.put((x_batch.copy(), y_batch.copy()))
                 i = 0
@@ -159,12 +153,10 @@ def feed_data():
                 for l in range(N_test):
                     line = pool.apply_async(read_data, (testfile, l))
                     val_batch_pool[j], val_y_batch[j] = sprit_data(line.get())
-                    #val_y_batch[j] = label
                     j += 1
 
                     if j == args.val_batchsize:
                         for k, x in enumerate(val_batch_pool):
-                            #val_x_batch[k] = x.get()
                             val_x_batch[k] = x
                         data_q.put((val_x_batch.copy(), val_y_batch.copy()))
                         j = 0
