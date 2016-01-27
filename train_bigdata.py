@@ -123,7 +123,12 @@ def sprit_data(data):
     inputlist = np.array(inputlist).astype(np.float32)
     outputlist = np.array(outputlist).astype(np.float32)
     return inputlist, outputlist
-    
+
+def sprit_batch(batch):
+    batch = np.array(batch).astype(np.float32)
+    x_batch = batch[:, :model.input_num]
+    y_batch  =batch[:, -output_num-2:-2]
+    return x_batch, y_batch
 def feed_data():
     # Data feeder
     i = 0
