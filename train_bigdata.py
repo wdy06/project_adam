@@ -107,6 +107,15 @@ def read_data(path, num):
     linecache.clearcache()
     return line
     
+def read_batch(path, randlist):
+    batch = []
+    for i in randlist:
+        line =  linecache.getline(path, i)
+        line = line.rstrip().split(",")
+        batch.append(line)
+    linecache.clearcache()
+    return batch
+    
 def sprit_data(data):
     #print (data)
     inputlist = data[:model.input_num]
