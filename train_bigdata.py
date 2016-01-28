@@ -18,6 +18,7 @@ import sys
 import threading
 import time
 import linecache
+import csv
 
 import numpy as np
 from PIL import Image
@@ -112,14 +113,29 @@ def read_batch(path, randlist):
     for i in randlist:
         line =  linecache.getline(path, i+1)
         line = line.rstrip().split(",")
-        
         batch.append(line)
-    linecache.clearcache()
+        linecache.clearcache()
+    return batch
+    
+def read_batch2(path, randlist):
+    batch = []
+    print (randlist)
+    randlist = np.sort(randlist)
+    f = open(path, 'rb')
+    reader = csv.reader(f)
+    i = 0
+    for k, row in enumerate(reader):
+        if k + 1 == randlist[i]:
+            #print (k+1, i)
+            batch.append(row)
+            i+=1
+            if i == len(randlist):
+                break
+    f.close()
+    print (len(batch))
     return batch
     
 def sprit_data(data):
-    
-    #print (data)
     inputlist = data[:model.input_num]
     outputlist = data[-output_num-2:-2]
     inputlist = np.array(inputlist).astype(np.float32)
@@ -129,11 +145,12 @@ def sprit_data(data):
 def sprit_batch(listbatch):
     #print ("test")
     #print (len(listbatch))
+    print (len(listbatch))
     batch = np.array(listbatch).astype(np.float32)
     x_batch = batch[:, :model.input_num]
     y_batch  =batch[:, -output_num-2:-2]
     return x_batch, y_batch
-    
+
 def feed_data():
     # Data feeder
     
@@ -146,18 +163,20 @@ def feed_data():
         perm = np.random.permutation(N)
 
         for i in range(0, N, args.batchsize):
-            batch = pool.apply_async(read_batch, (trainfile, perm[i:i + args.batchsize]))
+            batch = pool.apply_async(read_batch2, (trainfile, perm[i:i + args.batchsize]))
             x_batch, y_batch = sprit_batch(batch.get())
-            data_q.put((x_batch, y_batch))
+            data_q.put((x_batch.copy(), y_batch.copy()))
+            del batch, x_batch, y_batch
             
             count += 1
             if count % 100000 == 0:
                 data_q.put('val')
                 
                 for l in range(0, N_test, args.batchsize):
-                    val_batch = pool.apply_async(read_batch, (testfile, range(i, i + args.batchsize)))
+                    val_batch = pool.apply_async(read_batch2, (testfile, range(i, i + args.batchsize)))
                     val_x_batch, val_y_batch = sprit_batch(val_batch.get())
-                    data_q.put((val_x_batch, val_y_batch))
+                    data_q.put((val_x_batch.copy(), val_y_batch.copy()))
+                    del val_batch, val_x_batch, val_y_batch
                     
                 data_q.put('train')
 
@@ -205,8 +224,8 @@ def log_result():
 
             train_cur_loss += loss
             #train_cur_accuracy += accuracy
-            if train_count % 1000 == 0:
-                mean_loss = train_cur_loss / 1000
+            if train_count % 10 == 0:
+                mean_loss = train_cur_loss / 10
                 #mean_error = 1 - train_cur_accuracy / 1000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'train', 'iteration': train_count,
@@ -225,8 +244,8 @@ def log_result():
 
             val_loss += loss
             #val_accuracy += accuracy
-            if val_count == 50000:
-                mean_loss = val_loss * args.batchsize / 50000
+            if val_count == 20:
+                mean_loss = val_loss * args.batchsize / 20
                 #mean_error = 1 - val_accuracy * args.batchsize / 50000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'val', 'iteration': train_count,
