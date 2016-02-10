@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-"""Example code of learning a large scale convnet from ILSVRC2012 dataset.
 
-Prerequisite: To run this example, crop the center of ILSVRC2012 training and
-validation images and scale them to 256x256, and make two lists of space-
-separated CSV whose first column is full path to image and second column is
-zero-origin label (this format is same as that used by Caffe's ImageDataLayer).
-
-"""
 from __future__ import print_function
 import argparse
 import datetime
@@ -19,7 +12,8 @@ import threading
 import time
 import linecache
 import csv
-
+#import pdb; pdb.set_trace()
+import gc
 import numpy as np
 from PIL import Image
 import six
@@ -85,9 +79,27 @@ if args.gpu >= 0:
 optimizer = optimizers.MomentumSGD(lr=0.01, momentum=0.9)
 optimizer.setup(model)
 
+folder = './train_result/' + args.experiment_name + '/'
 t_folder = './teacher_data/'
+if os.path.isdir(folder) == True:
+    print ('this experiment name is existed')
+    print ('please change experiment name')
+    raw_input()
+else:
+    print ('make experiment folder')
+    os.makedirs(folder)
+
 trainfile = t_folder + args.trainfile
 testfile = t_folder + args.testfile
+
+with open(folder + 'settings.txt', 'wb') as o:
+    o.write('epoch:' + str(args.epoch) + '\n')
+    o.write('modelname:' + str(model.modelname) + '\n')
+    o.write('input:' + str(model.input_num) + '\n')
+    o.write('hidden:' + str(model.hidden_num) + '\n')
+    o.write('layer_num:' + str(model.layer_num) + '\n')
+    o.write('batchsize:' + str(args.batchsize) + '\n')
+    o.write(args.trainfile + ':' + args.testfile + '\n')
 
 N = sum(1 for line in open(trainfile))
 print ('N = ', N)
@@ -119,20 +131,17 @@ def read_batch(path, randlist):
     
 def read_batch2(path, randlist):
     batch = []
-    print (randlist)
     randlist = np.sort(randlist)
     f = open(path, 'rb')
     reader = csv.reader(f)
     i = 0
     for k, row in enumerate(reader):
-        if k + 1 == randlist[i]:
-            #print (k+1, i)
+        if k  == randlist[i]:
             batch.append(row)
             i+=1
             if i == len(randlist):
                 break
     f.close()
-    print (len(batch))
     return batch
     
 def sprit_data(data):
@@ -143,12 +152,15 @@ def sprit_data(data):
     return inputlist, outputlist
 
 def sprit_batch(listbatch):
-    #print ("test")
-    #print (len(listbatch))
-    print (len(listbatch))
+    
     batch = np.array(listbatch).astype(np.float32)
-    x_batch = batch[:, :model.input_num]
-    y_batch  =batch[:, -output_num-2:-2]
+    try:
+        x_batch = batch[:, :model.input_num]
+        y_batch = batch[:, -output_num-2:-2]
+    except:
+        print (batch.shape)
+        print ("error!")
+        raw_input()
     return x_batch, y_batch
 
 def feed_data():
@@ -167,17 +179,17 @@ def feed_data():
             x_batch, y_batch = sprit_batch(batch.get())
             data_q.put((x_batch.copy(), y_batch.copy()))
             del batch, x_batch, y_batch
-            
+            gc.collect()
             count += 1
-            if count % 100000 == 0:
+            if count % 10 == 0:
                 data_q.put('val')
                 
                 for l in range(0, N_test, args.batchsize):
-                    val_batch = pool.apply_async(read_batch2, (testfile, range(i, i + args.batchsize)))
+                    val_batch = pool.apply_async(read_batch2, (testfile, range(l, l + args.batchsize)))
                     val_x_batch, val_y_batch = sprit_batch(val_batch.get())
                     data_q.put((val_x_batch.copy(), val_y_batch.copy()))
                     del val_batch, val_x_batch, val_y_batch
-                    
+                    gc.collect()
                 data_q.put('train')
 
         optimizer.lr *= 0.97
@@ -188,6 +200,8 @@ def feed_data():
 
 def log_result():
     # Logger
+    global train_loss_list, test_loss_list
+    
     train_count = 0
     train_cur_loss = 0
     #train_cur_accuracy = 0
@@ -226,6 +240,7 @@ def log_result():
             #train_cur_accuracy += accuracy
             if train_count % 10 == 0:
                 mean_loss = train_cur_loss / 10
+                train_loss_list.append(mean_loss)
                 #mean_error = 1 - train_cur_accuracy / 1000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'train', 'iteration': train_count,
@@ -244,8 +259,9 @@ def log_result():
 
             val_loss += loss
             #val_accuracy += accuracy
-            if val_count == 20:
-                mean_loss = val_loss * args.batchsize / 20
+            if val_count == 10:
+                mean_loss = val_loss * args.batchsize / 10
+                test_loss_list.append(mean_loss)
                 #mean_error = 1 - val_accuracy * args.batchsize / 50000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'val', 'iteration': train_count,
@@ -269,7 +285,7 @@ def train_loop():
             continue
         elif inp == 'val':  # start validation
             res_q.put('val')
-            pickle.dump(model, open(args.out, 'wb'), -1)
+            pickle.dump(model, open(folder + "model", 'wb'), -1)
             train = False
             continue
 
@@ -295,7 +311,10 @@ def train_loop():
 
         res_q.put(float(loss.data))
         del loss, x, y
-
+        gc.collect()
+        
+train_loss_list = []
+test_loss_list = []
 # Invoke threads
 feeder = threading.Thread(target=feed_data)
 feeder.daemon = True
@@ -308,5 +327,21 @@ train_loop()
 feeder.join()
 logger.join()
 
-# Save final model
-pickle.dump(model, open(args.out, 'wb'), -1)
+with open(folder + 'loss.csv', 'wb') as oc:
+    odata = []
+    odata.append(train_loss_list)
+    odata.append(test_loss_list)
+    
+    odata = np.array(odata).transpose()
+    writer = csv.writer(oc)
+    writer.writerows(odata)
+    print ('save loss.csv')
+           
+if args.gpu >= 0:
+    print ('model to cpu')
+    model.to_cpu()
+#pickle.dump(model, open("model", 'wb'), -1)
+with open(folder + 'final_model', 'wb') as o:
+    pickle.dump(model, o)
+print ("model saved")
+print ("finished!!!")
