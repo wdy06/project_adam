@@ -590,18 +590,143 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
     print "train_count = %d" % train_count
     print "test_count = %d" % test_count
     print 'finished!!'
+    
+def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の最大値を回帰 
+    print 'make_dataset_5'
+    start_test_day = 20090105 
+    input_num = inputnum   
+    next_day = 5#何日後の値上がり率で判断するか
+    
+    train_count = 0
+    test_count = 0
+    fpath1 = t_folder + 'trainvol' + str(input_num) + '.csv'
+    fpath2 = t_folder + 'testvol' + str(input_num) + '.csv'
+    fw1 = open(fpath1, 'w')
+    fw2 = open(fpath2, 'w')
+    writer1 = csv.writer(fw1, lineterminator='\n')
+    writer2 = csv.writer(fw2, lineterminator='\n')
+    
+    files = os.listdir("./stockdata")
+    for k, f in enumerate(files):
+        print f, k
+        _time = []
+        _open = []
+        _max = []
+        _min = []
+        _close = []
+        _volume = []
+        _keisu = []
+        _shihon = []
+        filepath = "./stockdata/%s" % f
+        _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+        #使わないリストは削除
+        del _open
+        del _max
+        del _min
+        del _keisu
+        del _shihon
+        #start_test_dayでデータセットを分割
+        try:
+            iday = _time.index(start_test_day)
+        except:
+            print "can't find start_test_day"
+            continue#start_test_dayが見つからなければ次のファイルへ
+        trainprice = _close[:iday]
+        testprice = _close[iday:]
+        traintech = _volume[:iday]
+        testtech = _volume[iday:]
+        
+        if len(trainprice) < input_num or len(testprice) < input_num:
+            continue
+        
+        price_min = min(trainprice)
+        price_max = max(trainprice)
+        tech_min = min(traintech)
+        tech_max = max(testtech)
+        
+        datalist = trainprice
+        datalist_tech = traintech
+        
+        for i, price in enumerate(datalist):
+            if i % 2 == 0:
+                #全部は多すぎるので半分
+                continue
+            inputlist = copy.copy(datalist[i:i + input_num])
+            inputlist_tech = copy.copy(datalist_tech[i:i + input_num])
+            
+            
+            try:
+                now_price = datalist[i + input_num - 1]
+                predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            except:
+                continue#datalistが短すぎる場合は飛ばす
+            outputlist = []
+            outputlist.append((predic_price - now_price) / now_price)
+            outputlist.append(price_min)
+            outputlist.append(price_max)
+            
+
+            normalizationArray(inputlist,price_min,price_max)
+            normalizationArray(inputlist_tech,tech_min,tech_max)
+            
+            
+            writer1.writerow(inputlist + inputlist_tech + outputlist)#train.csvに書き込み
+            train_count = train_count + 1
+            if i + input_num + next_day == len(datalist):
+                break
+            
+       
+        
+        datalist = testprice
+        datalist_tech = testtech
+        
+        for i, price in enumerate(datalist):
+            if i % 2 == 0:
+                #全部は多すぎるので半分
+                continue
+            inputlist = copy.copy(datalist[i:i + input_num])
+            inputlist_tech = copy.copy(datalist_tech[i:i + input_num])
+            
+            try:
+                now_price = datalist[i + input_num - 1]
+                predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            except:
+                #print 'datalist too short'
+                continue#datalistが短すぎる場合は飛ばす
+            outputlist = []
+            outputlist.append((predic_price - now_price) / now_price)
+            outputlist.append(price_min)
+            outputlist.append(price_max)
+            
+            normalizationArray(inputlist,price_min,price_max)
+            normalizationArray(inputlist_tech,tech_min,tech_max)
+            
+            writer2.writerow(inputlist + inputlist_tech + outputlist)#test.csvに書き込み
+            test_count = test_count + 1
+            if i + input_num + next_day == len(datalist):
+                break
+                
+            
+    fw1.close()
+    fw2.close()
+    print 'save ' + str(fpath1)
+    print 'save ' + str(fpath2)
+    print "train_count = %d" % train_count
+    print "test_count = %d" % test_count
+    print 'finished!!'
+    
 if __name__ == '__main__':
     print "start make dataset"
-    make_dataset_4(10)
-    make_dataset_4(20)
-    make_dataset_4(30)
-    make_dataset_4(40)
-    make_dataset_4(50)
-    make_dataset_4(60)
-    make_dataset_4(70)
-    make_dataset_4(80)
-    make_dataset_4(90)
-    make_dataset_4(100)
+    make_dataset_5(10)
+    make_dataset_5(20)
+    make_dataset_5(30)
+    make_dataset_5(40)
+    make_dataset_5(50)
+    make_dataset_5(60)
+    make_dataset_5(70)
+    make_dataset_5(80)
+    make_dataset_5(90)
+    make_dataset_5(100)
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
     #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
