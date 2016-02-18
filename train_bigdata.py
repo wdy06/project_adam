@@ -166,13 +166,17 @@ def sprit_batch(listbatch):
         raw_input()
     return x_batch, y_batch
 
+
+epoch_count=0
+
 def feed_data():
     # Data feeder
-    
+    global epoch_count
     count = 0
     pool = multiprocessing.Pool(args.loaderjob)
     data_q.put('train')
     for epoch in six.moves.range(1, 1 + args.epoch):
+        epoch_count = epoch
         print('epoch', epoch, file=sys.stderr)
         print('learning rate', optimizer.lr, file=sys.stderr)
         perm = np.random.permutation(N)
@@ -311,10 +315,18 @@ def train_loop():
 
         else:
             loss = model.forward(x, y, train=False)
-
+        
+        if epoch_count % 10 == 0:
+        print 'save model'
+        model.to_cpu()
+        with open(folder + 'model_' + str(epoch_count), 'wb') as o:
+            pickle.dump(model, o)
+        model.to_gpu()#もう一度GPUに戻すのか？
+        optimizer.setup(model)
+        
         res_q.put(float(loss.data))
         del loss, x, y
-        gc.collect()
+        #gc.collect()
         
 train_loss_list = []
 test_loss_list = []
