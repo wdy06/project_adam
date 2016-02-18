@@ -12,7 +12,8 @@ import threading
 import time
 import linecache
 import csv
-#import pdb; pdb.set_trace()
+import pyximport
+pyximport.install()
 import gc
 import numpy as np
 from PIL import Image
@@ -23,6 +24,8 @@ from six.moves import queue
 from chainer import computational_graph as c
 from chainer import cuda
 from chainer import optimizers
+
+import cyfuncs
 
 parser = argparse.ArgumentParser(description='Chainer example: MNIST')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
@@ -175,17 +178,17 @@ def feed_data():
         perm = np.random.permutation(N)
 
         for i in range(0, N, args.batchsize):
-            batch = pool.apply_async(read_batch2, (trainfile, perm[i:i + args.batchsize]))
+            batch = pool.apply_async(cyfuncs.read_batch2, (trainfile, perm[i:i + args.batchsize]))
             x_batch, y_batch = sprit_batch(batch.get())
             data_q.put((x_batch.copy(), y_batch.copy()))
             del batch, x_batch, y_batch
             gc.collect()
             count += 1
-            if count % 10 == 0:
+            if count % 100 == 0:
                 data_q.put('val')
                 
                 for l in range(0, N_test, args.batchsize):
-                    val_batch = pool.apply_async(read_batch2, (testfile, range(l, l + args.batchsize)))
+                    val_batch = pool.apply_async(cyfuncs.read_batch2, (testfile, range(l, l + args.batchsize)))
                     val_x_batch, val_y_batch = sprit_batch(val_batch.get())
                     data_q.put((val_x_batch.copy(), val_y_batch.copy()))
                     del val_batch, val_x_batch, val_y_batch
@@ -259,8 +262,8 @@ def log_result():
 
             val_loss += loss
             #val_accuracy += accuracy
-            if val_count == 10:
-                mean_loss = val_loss * args.batchsize / 10
+            if val_count == 100:
+                mean_loss = val_loss * args.batchsize / 100
                 test_loss_list.append(mean_loss)
                 #mean_error = 1 - val_accuracy * args.batchsize / 50000
                 print(file=sys.stderr)
