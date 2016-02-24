@@ -591,7 +591,7 @@ def make_dataset_4(inputnum):#一定期間の株価から数日後の株価の�
     print "test_count = %d" % test_count
     print 'finished!!'
     
-def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の最大値を回帰 
+def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, param3 = None):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
     print 'make_dataset_5'
     start_test_day = 20090105 
     input_num = inputnum   
@@ -599,8 +599,8 @@ def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の�
     
     train_count = 0
     test_count = 0
-    fpath1 = t_folder + 'trainvol' + str(input_num) + '.csv'
-    fpath2 = t_folder + 'testvol' + str(input_num) + '.csv'
+    fpath1 = t_folder + 'train' + tech_name + str(input_num) + '.csv'
+    fpath2 = t_folder + 'test' + tech_name + str(input_num) + '.csv'
     fw1 = open(fpath1, 'w')
     fw2 = open(fpath2, 'w')
     writer1 = csv.writer(fw1, lineterminator='\n')
@@ -619,41 +619,81 @@ def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の�
         _shihon = []
         filepath = "./stockdata/%s" % f
         _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
-        #使わないリストは削除
-        del _open
-        del _max
-        del _min
-        del _keisu
-        del _shihon
+
         #start_test_dayでデータセットを分割
         try:
             iday = _time.index(start_test_day)
         except:
             print "can't find start_test_day"
             continue#start_test_dayが見つからなければ次のファイルへ
+            
+        if tech_name == "EMA":
+            tech1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = param1)
+            tech1 = np.ndarray.tolist(tech1)
+        elif tech_name == "RSI":
+            tech1 = ta.RSI(np.array(_close, dtype='f8'), timeperiod = param1)
+            tech1 = np.ndarray.tolist(tech1)
+        elif tech_name == "MACD":
+            tech1,tech2 = ta.MACD(np.array(_close, dtype='f8'), fastperiod = param1, slowperiod = param2, signalperiod = param3)
+            tech1 = np.ndarray.tolist(tech1)
+            tech2 = np.ndarray.tolist(tech2)
+        elif tech_name == "STOCH":
+            tech1,tech2 == ta.STOCH(np.array(_close, dtype='f8'), fastk_period = param1,slowk_period=param2,slowd_period=param3)
+            tech1 = np.ndarray.tolist(tech1)
+            tech2 = np.ndarray.tolist(tech2)
+        elif tech_name == "WILLR":
+            tech1 = ta.WILLR(np.array(_close, dtype='f8'), timeperiod = param1)
+            tech1 = np.ndarray.tolist(tech1)
+        elif tech_name == "VOL":
+            tech1 = _volume
+            tech1 = np.ndarray.tolist(tech1)
+            
+        _close = _close[2*param1:]
         trainprice = _close[:iday]
         testprice = _close[iday:]
-        traintech = _volume[:iday]
-        testtech = _volume[iday:]
+        
+        tech1 = tech1[2*param1:]
+        traintech1 = tech1[:iday]
+        testtech1 = tech1[iday:]
+        
+        
+        if tech_name == ("MACD" or "STOCH"):
+            
+            tech2 = tech2[2*param1]
+            traintech2 = tech2[:iday]
+            testtech2 = tech2[iday:]
+        
+        
         
         if len(trainprice) < input_num or len(testprice) < input_num:
             continue
         
         price_min = min(trainprice)
         price_max = max(trainprice)
-        tech_min = min(traintech)
-        tech_max = max(testtech)
+        
+        if tech_name == ("EMA" or "MACD"):
+            tech_min = min(trainprice)
+            tech_max = max(testprice)
+        elif tech_name == ("RSI" or "STOCH" or "WILLR"):
+            tech_min = 0
+            tech_max = 100
+        elif tech_name == "VOL":
+            tech_min = min(traintech1)
+            tech_max = max(testtech1)
         
         datalist = trainprice
-        datalist_tech = traintech
+        datalist_tech1 = traintech1
+        if tech_name == ("MACD" or "STOCH"):
+            datalist_tech2 = traintech2
         
         for i, price in enumerate(datalist):
             if i % 2 == 0:
                 #全部は多すぎるので半分
                 continue
             inputlist = copy.copy(datalist[i:i + input_num])
-            inputlist_tech = copy.copy(datalist_tech[i:i + input_num])
-            
+            inputlist_tech1 = copy.copy(datalist_tech1[i:i + input_num])
+            if tech_name == ("STOCH" or "MACD"):
+                inputlist_tech2 = copy.copy(datalist_tech2[i:i + input_num])
             
             try:
                 now_price = datalist[i + input_num - 1]
@@ -667,10 +707,14 @@ def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の�
             
 
             normalizationArray(inputlist,price_min,price_max)
-            normalizationArray(inputlist_tech,tech_min,tech_max)
+            normalizationArray(inputlist_tech1,tech_min,tech_max)
             
+            if tech_name == ("STOCH" or "MACD"):
+                normalizationArray(inputlist_tech2,tech_min,tech_max)
+                writer1.writerow(inputlist + inputlist_tech1 + inputlist_tech2 + outputlist)#train.csvに書き込み
+            else:
+                writer1.writerow(inputlist + inputlist_tech1 + outputlist)#train.csvに書き込み
             
-            writer1.writerow(inputlist + inputlist_tech + outputlist)#train.csvに書き込み
             train_count = train_count + 1
             if i + input_num + next_day == len(datalist):
                 break
@@ -678,14 +722,18 @@ def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の�
        
         
         datalist = testprice
-        datalist_tech = testtech
+        datalist_tech1 = testtech1
+        if tech_name == ("STOCH" or "MACD"):
+            datalist_tech2 = testtech2
         
         for i, price in enumerate(datalist):
             if i % 2 == 0:
                 #全部は多すぎるので半分
                 continue
             inputlist = copy.copy(datalist[i:i + input_num])
-            inputlist_tech = copy.copy(datalist_tech[i:i + input_num])
+            inputlist_tech1 = copy.copy(datalist_tech1[i:i + input_num])
+            if tech_name == ("STOCH" or "MACD"):
+                inputlist_tech2 = copy.copy(datalist_tech2[i:i + input_num])
             
             try:
                 now_price = datalist[i + input_num - 1]
@@ -699,9 +747,12 @@ def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の�
             outputlist.append(price_max)
             
             normalizationArray(inputlist,price_min,price_max)
-            normalizationArray(inputlist_tech,tech_min,tech_max)
-            
-            writer2.writerow(inputlist + inputlist_tech + outputlist)#test.csvに書き込み
+            normalizationArray(inputlist_tech1,tech_min,tech_max)
+            if tech_name == ("STOCH" or "MACD"):
+                normalizationArray(inputlist_tech2,tech_min,tech_max)
+                writer1.writerow(inputlist + inputlist_tech1 + inputlist_tech2 + outputlist)#train.csvに書き込み
+            else:
+                writer1.writerow(inputlist + inputlist_tech1 + outputlist)#train.csvに書き込み
             test_count = test_count + 1
             if i + input_num + next_day == len(datalist):
                 break
@@ -717,16 +768,16 @@ def make_dataset_5(inputnum):#一定期間の株価から数日後の株価の�
     
 if __name__ == '__main__':
     print "start make dataset"
-    make_dataset_5(10)
-    make_dataset_5(20)
-    make_dataset_5(30)
-    make_dataset_5(40)
-    make_dataset_5(50)
-    make_dataset_5(60)
-    make_dataset_5(70)
-    make_dataset_5(80)
-    make_dataset_5(90)
-    make_dataset_5(100)
+    make_dataset_5(10,"RSI",param1 = 14)
+    make_dataset_5(20,"RSI",param1 = 14)
+    make_dataset_5(30,"RSI",param1 = 14)
+    make_dataset_5(40,"RSI",param1 = 14)
+    make_dataset_5(50,"RSI",param1 = 14)
+    make_dataset_5(60,"RSI",param1 = 14)
+    make_dataset_5(70,"RSI",param1 = 14)
+    make_dataset_5(80,"RSI",param1 = 14)
+    make_dataset_5(90,"RSI",param1 = 14)
+    make_dataset_5(100,"RSI",param1 = 14)
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
     #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
