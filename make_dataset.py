@@ -642,7 +642,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
             tech1 = np.ndarray.tolist(tech1)
             tech2 = np.ndarray.tolist(tech2)
         elif tech_name == "WILLR":
-            tech1 = ta.WILLR(np.array(_close, dtype='f8'), timeperiod = param1)
+            tech1 = ta.WILLR(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), timeperiod = param1)
             tech1 = np.ndarray.tolist(tech1)
         elif tech_name == "VOL":
             tech1 = _volume
@@ -657,7 +657,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
         testtech1 = tech1[iday:]
         
         
-        if tech_name == ("MACD" or "STOCH"):
+        if tech_name in ("MACD", "STOCH"):
             
             tech2 = tech2[2*param1]
             traintech2 = tech2[:iday]
@@ -671,19 +671,22 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
         price_min = min(trainprice)
         price_max = max(trainprice)
         
-        if tech_name == ("EMA" or "MACD"):
+        if tech_name in ("EMA", "MACD"):
             tech_min = min(trainprice)
             tech_max = max(testprice)
-        elif tech_name == ("RSI" or "STOCH" or "WILLR"):
+        elif tech_name in ("RSI", "STOCH"):
             tech_min = 0
             tech_max = 100
+        elif tech_name == "WILLR":
+            tech_min = -100
+            tech_max = 0
         elif tech_name == "VOL":
             tech_min = min(traintech1)
-            tech_max = max(testtech1)
+            tech_max = max(traintech1)
         
         datalist = trainprice
         datalist_tech1 = traintech1
-        if tech_name == ("MACD" or "STOCH"):
+        if tech_name in ("MACD", "STOCH"):
             datalist_tech2 = traintech2
         
         for i, price in enumerate(datalist):
@@ -692,7 +695,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
                 continue
             inputlist = copy.copy(datalist[i:i + input_num])
             inputlist_tech1 = copy.copy(datalist_tech1[i:i + input_num])
-            if tech_name == ("STOCH" or "MACD"):
+            if tech_name in ("STOCH", "MACD"):
                 inputlist_tech2 = copy.copy(datalist_tech2[i:i + input_num])
             
             try:
@@ -709,7 +712,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
             normalizationArray(inputlist,price_min,price_max)
             normalizationArray(inputlist_tech1,tech_min,tech_max)
             
-            if tech_name == ("STOCH" or "MACD"):
+            if tech_name in ("STOCH", "MACD"):
                 normalizationArray(inputlist_tech2,tech_min,tech_max)
                 writer1.writerow(inputlist + inputlist_tech1 + inputlist_tech2 + outputlist)#train.csvに書き込み
             else:
@@ -723,7 +726,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
         
         datalist = testprice
         datalist_tech1 = testtech1
-        if tech_name == ("STOCH" or "MACD"):
+        if tech_name in ("STOCH", "MACD"):
             datalist_tech2 = testtech2
         
         for i, price in enumerate(datalist):
@@ -732,7 +735,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
                 continue
             inputlist = copy.copy(datalist[i:i + input_num])
             inputlist_tech1 = copy.copy(datalist_tech1[i:i + input_num])
-            if tech_name == ("STOCH" or "MACD"):
+            if tech_name in ("STOCH", "MACD"):
                 inputlist_tech2 = copy.copy(datalist_tech2[i:i + input_num])
             
             try:
@@ -748,11 +751,12 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
             
             normalizationArray(inputlist,price_min,price_max)
             normalizationArray(inputlist_tech1,tech_min,tech_max)
-            if tech_name == ("STOCH" or "MACD"):
+            
+            if tech_name in ("STOCH", "MACD"):
                 normalizationArray(inputlist_tech2,tech_min,tech_max)
-                writer1.writerow(inputlist + inputlist_tech1 + inputlist_tech2 + outputlist)#train.csvに書き込み
+                writer2.writerow(inputlist + inputlist_tech1 + inputlist_tech2 + outputlist)#train.csvに書き込み
             else:
-                writer1.writerow(inputlist + inputlist_tech1 + outputlist)#train.csvに書き込み
+                writer2.writerow(inputlist + inputlist_tech1 + outputlist)#train.csvに書き込み
             test_count = test_count + 1
             if i + input_num + next_day == len(datalist):
                 break
@@ -768,16 +772,16 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
     
 if __name__ == '__main__':
     print "start make dataset"
-    make_dataset_5(10,"RSI",param1 = 14)
-    make_dataset_5(20,"RSI",param1 = 14)
-    make_dataset_5(30,"RSI",param1 = 14)
-    make_dataset_5(40,"RSI",param1 = 14)
-    make_dataset_5(50,"RSI",param1 = 14)
-    make_dataset_5(60,"RSI",param1 = 14)
-    make_dataset_5(70,"RSI",param1 = 14)
-    make_dataset_5(80,"RSI",param1 = 14)
-    make_dataset_5(90,"RSI",param1 = 14)
-    make_dataset_5(100,"RSI",param1 = 14)
+    make_dataset_5(10,"WILLR",param1 = 14)
+    make_dataset_5(20,"WILLR",param1 = 14)
+    make_dataset_5(30,"WILLR",param1 = 14)
+    make_dataset_5(40,"WILLR",param1 = 14)
+    make_dataset_5(50,"WILLR",param1 = 14)
+    make_dataset_5(60,"WILLR",param1 = 14)
+    make_dataset_5(70,"WILLR",param1 = 14)
+    make_dataset_5(80,"WILLR",param1 = 14)
+    make_dataset_5(90,"WILLR",param1 = 14)
+    make_dataset_5(100,"WILLR",param1 = 14)
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
     #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
