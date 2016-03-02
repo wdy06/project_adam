@@ -89,12 +89,12 @@ class Regression_DNN(chainer.FunctionSet):
         #print y.data.shape, t.data.shape
         return F.mean_squared_error(y, t)
         
-    def predict(self, x_data, train=True):
+    def predict(self, x_data, train=False):
         #print y_data
         x = chainer.Variable(x_data)
-        h1 = F.dropout(F.relu(self.fc1(x)), train=train)
-        h2 = F.dropout(F.relu(self.fc2(h1)), train=train)
-        h3 = F.dropout(F.relu(self.fc3(h2)), train=train)
+        h1 = F.dropout(F.tanh(self.fc1(x)), train=train)
+        h2 = F.dropout(F.tanh(self.fc2(h1)), train=train)
+        h3 = F.dropout(F.tanh(self.fc3(h2)), train=train)
         y = self.fc4(h3)
         return y
         

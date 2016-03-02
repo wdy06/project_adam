@@ -35,27 +35,27 @@ def calcstocks(money, price):
 def getNormTech(tech_name):
     
     if tech_name == "EMA":
-        tech1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = param1)
+        tech1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 10)
         tech1 = np.ndarray.tolist(tech1)
         make_dataset.normalizationArray(tech1,min(_close[:iday]),max(_close[:iday]))
     elif tech_name == "RSI":
-        tech1 = ta.RSI(np.array(_close, dtype='f8'), timeperiod = param1)
+        tech1 = ta.RSI(np.array(_close, dtype='f8'), timeperiod = 14)
         tech1 = np.ndarray.tolist(tech1)
         make_dataset.normalizationArray(tech1,0,100)
     elif tech_name == "MACD":
-        tech1,tech2 = ta.MACD(np.array(_close, dtype='f8'), fastperiod = param1, slowperiod = param2, signalperiod = param3)
+        tech1,tech2 = ta.MACD(np.array(_close, dtype='f8'), fastperiod = 12, slowperiod = 26, signalperiod = 9)
         tech1 = np.ndarray.tolist(tech1)
         tech2 = np.ndarray.tolist(tech2)
         make_dataset.normalizationArray(tech1,min(_close[:iday]),max(_close[:iday]))
         make_dataset.normalizationArray(tech2,nmin,nmax)
     elif tech_name == "STOCH":
-        tech1,tech2 == ta.STOCH(np.array(_close, dtype='f8'), fastk_period = param1,slowk_period=param2,slowd_period=param3)
+        tech1,tech2 == ta.STOCH(np.array(_close, dtype='f8'), fastk_period = 7,slowk_period=3,slowd_period=3)
         tech1 = np.ndarray.tolist(tech1)
         tech2 = np.ndarray.tolist(tech2)
         make_dataset.normalizationArray(tech1,0,100)
         make_dataset.normalizationArray(tech2,0,100)
     elif tech_name == "WILLR":
-        tech1 = ta.WILLR(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), timeperiod = param1)
+        tech1 = ta.WILLR(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), timeperiod = 14)
         tech1 = np.ndarray.tolist(tech1)
         make_dataset.normalizationArray(tech1,-100,0)
     elif tech_name == "VOL":
@@ -75,6 +75,7 @@ parser.add_argument('--tech_name', '-t', default=None,
                     help='input tech name')
 args = parser.parse_args()
 
+tech_name = args.tech_name
 #モデルの読み込み
 with open(args.model, 'rb') as i:
     print "open " + args.model
@@ -162,8 +163,7 @@ for f in files:
         if tech_name in ("EMA","RSI","WILLR","VOL"):
             inputlist = datalist[i:i + input_num] + tech1[i:i + input_num]
         elif tech_name in ("MACD","STOCH"):
-            inputlist = datalist[i:i + input_num] + tech1[i:i + input_num]
-                + tech2[i:i + input_num]
+            inputlist = datalist[i:i + input_num] + tech1[i:i + input_num] + tech2[i:i + input_num]
         elif tech_name is None:
             inputlist = datalist[i:i + input_num]
         
