@@ -33,31 +33,47 @@ def calcstocks(money, price):
     return 100 * (i - 1)
     
 def getNormTech(tech_name):
+    
     if tech_name == "EMA":
         tech1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = param1)
         tech1 = np.ndarray.tolist(tech1)
+        make_dataset.normalizationArray(tech1,min(_close),max(_close))
     elif tech_name == "RSI":
         tech1 = ta.RSI(np.array(_close, dtype='f8'), timeperiod = param1)
         tech1 = np.ndarray.tolist(tech1)
+        make_dataset.normalizationArray(tech1,0,100)
     elif tech_name == "MACD":
         tech1,tech2 = ta.MACD(np.array(_close, dtype='f8'), fastperiod = param1, slowperiod = param2, signalperiod = param3)
         tech1 = np.ndarray.tolist(tech1)
         tech2 = np.ndarray.tolist(tech2)
+        make_dataset.normalizationArray(tech1,min(_close),max(_close))
+        make_dataset.normalizationArray(tech2,nmin,nmax)
     elif tech_name == "STOCH":
         tech1,tech2 == ta.STOCH(np.array(_close, dtype='f8'), fastk_period = param1,slowk_period=param2,slowd_period=param3)
         tech1 = np.ndarray.tolist(tech1)
         tech2 = np.ndarray.tolist(tech2)
+        make_dataset.normalizationArray(tech1,0,100)
+        make_dataset.normalizationArray(tech2,0,100)
     elif tech_name == "WILLR":
         tech1 = ta.WILLR(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), timeperiod = param1)
         tech1 = np.ndarray.tolist(tech1)
+        make_dataset.normalizationArray(tech1,-100,0)
     elif tech_name == "VOL":
         tech1 = _volume
         tech1 = np.ndarray.tolist(tech1)
-    
+        make_dataset.normalizationArray(tech1,min(_volume),max(_volume))
+        
+    if tech_name in ("MACD","STOCH",):
+        return tech1, tech2
+        
+    elif tech_name in ("EMA","RSI","WILLR","VOL"):
+        return tech1
 
 parser = argparse.ArgumentParser(description='trading by learned model')
 parser.add_argument('--model', '-m', default="model",
                     help='path of using model')
+parser.add_argument('--tech_name', '-t', default=None,
+                    help='input tech name')
 args = parser.parse_args()
 
 #モデルの読み込み
@@ -109,8 +125,7 @@ for f in files:
     trading_count = 0#取引回数
     filepath = "./stockdata/%s" % f
     #株価データの読み込み
-    global _time,global _open,global _max,global _min,global _close,
-        global _volume,_keisu,_shihon = make_dataset.readfile(filepath)
+    _time,_open,_max,_min,_close,_volume,_keisu,_shihon = make_dataset.readfile(filepath)
     try:
         iday = _time.index(start_trading_day)
     except:
@@ -118,6 +133,8 @@ for f in files:
         continue#start_trading_dayが見つからなければ次のファイルへ    
     
     _close = np.array(_close, dtype='f8')
+    
+        
     #rsis = ta.RSI(_close, timeperiod=14)
     #売買開始日のモデル入力数前からスライス
     #print _close
