@@ -37,7 +37,7 @@ def getNormTech(tech_name):
     if tech_name == "EMA":
         tech1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = param1)
         tech1 = np.ndarray.tolist(tech1)
-        make_dataset.normalizationArray(tech1,min(_close),max(_close))
+        make_dataset.normalizationArray(tech1,min(_close[:iday]),max(_close[:iday]))
     elif tech_name == "RSI":
         tech1 = ta.RSI(np.array(_close, dtype='f8'), timeperiod = param1)
         tech1 = np.ndarray.tolist(tech1)
@@ -46,7 +46,7 @@ def getNormTech(tech_name):
         tech1,tech2 = ta.MACD(np.array(_close, dtype='f8'), fastperiod = param1, slowperiod = param2, signalperiod = param3)
         tech1 = np.ndarray.tolist(tech1)
         tech2 = np.ndarray.tolist(tech2)
-        make_dataset.normalizationArray(tech1,min(_close),max(_close))
+        make_dataset.normalizationArray(tech1,min(_close[:iday]),max(_close[:iday]))
         make_dataset.normalizationArray(tech2,nmin,nmax)
     elif tech_name == "STOCH":
         tech1,tech2 == ta.STOCH(np.array(_close, dtype='f8'), fastk_period = param1,slowk_period=param2,slowd_period=param3)
@@ -134,23 +134,39 @@ for f in files:
     
     _close = np.array(_close, dtype='f8')
     
-        
+    if tech_name in ("EMA","RSI","WILLR","VOL"):
+        tech1 = getNormTech(tech_name)
+    elif tech_name in ("MACD","STOCH"):
+        tech1, tech2 = getNormTech(tech_name)
+    elif tech_name is None:
+        pass
     #rsis = ta.RSI(_close, timeperiod=14)
-    #売買開始日のモデル入力数前からスライス
-    #print _close
+    
+    #訓練期間の最大最小で正規化
     price_min = min(_close[:iday])
     price_max = max(_close[:iday])
     
+    #売買開始日のモデル入力数前からスライス
     datalist = _close[iday - input_num + 1:]
     if len(datalist) < input_num:
         continue
+    if tech_name in ("EMA","RSI","WILLR","VOL"):
+        tech1 = tech1[iday - input_num + 1:]
+    elif tech_name in ("MACD","STOCH"):
+        tech1 = tech1[iday - input_num + 1:]
+        tech2 = tech2[iday - input_num + 1:]
     #normalizationArray
     make_dataset.normalizationArray(datalist, price_min, price_max)
     #売買ポイントを作成
     #point.append(NO_OPERATION)#一日目は何もしない
     for i, price in enumerate(datalist):
-        #print datalist
-        inputlist = datalist[i:i + input_num]
+        if tech_name in ("EMA","RSI","WILLR","VOL"):
+            inputlist = datalist[i:i + input_num] + tech1[i:i + input_num]
+        elif tech_name in ("MACD","STOCH"):
+            inputlist = datalist[i:i + input_num] + tech1[i:i + input_num]
+                + tech2[i:i + input_num]
+        elif tech_name is None:
+            inputlist = datalist[i:i + input_num]
         
         y = model.predict(np.array([inputlist]).astype(np.float32), train=False)
         if y.data >= BTH:#buy
