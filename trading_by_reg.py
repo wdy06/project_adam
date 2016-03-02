@@ -70,8 +70,7 @@ def getNormTech(tech_name):
         return tech1
 
 parser = argparse.ArgumentParser(description='trading by learned model')
-parser.add_argument('--model', '-m', default="model",
-                    help='path of using model')
+parser.add_argument('model', help='path of using model')
 parser.add_argument('--tech_name', '-t', default=None,
                     help='input tech name')
 args = parser.parse_args()
