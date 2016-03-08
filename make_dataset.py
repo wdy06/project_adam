@@ -634,11 +634,11 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
             tech1 = ta.RSI(np.array(_close, dtype='f8'), timeperiod = param1)
             tech1 = np.ndarray.tolist(tech1)
         elif tech_name == "MACD":
-            tech1,tech2 = ta.MACD(np.array(_close, dtype='f8'), fastperiod = param1, slowperiod = param2, signalperiod = param3)
+            tech1,tech2,gomi = ta.MACD(np.array(_close, dtype='f8'), fastperiod = param1, slowperiod = param2, signalperiod = param3)
             tech1 = np.ndarray.tolist(tech1)
             tech2 = np.ndarray.tolist(tech2)
         elif tech_name == "STOCH":
-            tech1,tech2 == ta.STOCH(np.array(_close, dtype='f8'), fastk_period = param1,slowk_period=param2,slowd_period=param3)
+            tech1,tech2 = ta.STOCH(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), fastk_period = param1,slowk_period=param2,slowd_period=param3)
             tech1 = np.ndarray.tolist(tech1)
             tech2 = np.ndarray.tolist(tech2)
         elif tech_name == "WILLR":
@@ -646,7 +646,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
             tech1 = np.ndarray.tolist(tech1)
         elif tech_name == "VOL":
             tech1 = _volume
-            tech1 = np.ndarray.tolist(tech1)
+            
             
         _close = _close[2*param1:]
         trainprice = _close[:iday]
@@ -659,7 +659,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
         
         if tech_name in ("MACD", "STOCH"):
             
-            tech2 = tech2[2*param1]
+            tech2 = tech2[2*param1:]
             traintech2 = tech2[:iday]
             testtech2 = tech2[iday:]
         
@@ -772,16 +772,9 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
     
 if __name__ == '__main__':
     print "start make dataset"
-    make_dataset_5(10,"WILLR",param1 = 14)
-    make_dataset_5(20,"WILLR",param1 = 14)
-    make_dataset_5(30,"WILLR",param1 = 14)
-    make_dataset_5(40,"WILLR",param1 = 14)
-    make_dataset_5(50,"WILLR",param1 = 14)
-    make_dataset_5(60,"WILLR",param1 = 14)
-    make_dataset_5(70,"WILLR",param1 = 14)
-    make_dataset_5(80,"WILLR",param1 = 14)
-    make_dataset_5(90,"WILLR",param1 = 14)
-    make_dataset_5(100,"WILLR",param1 = 14)
+    
+    for i in range(10,101,10):
+        make_dataset_5(i,"VOL",param1 = 14, param2 = 3, param3 = 3)
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
     #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
