@@ -218,7 +218,82 @@ def make_dataset_1():#一定期間の株価から翌日の株価を回帰予測
     print "train_count = %d" % train_count
     print "test_count = %d" % test_count
     print 'finished!!'
+def make_dataset_code(code,input_num,output_num):#一定期間の株価から翌日の株価を回帰予測    
+    START_TEST_DAY = 20090105 
+    train_count = 0
+    test_count = 0
+    
+    filename = "stock(" + str(code) + ").CSV"
+    _time = []
+    _open = []
+    _max = []
+    _min = []
+    _close = []
+    _volume = []
+    _keisu = []
+    _shihon = []
+    filepath = "./stockdata/" + filename
+    _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+    
+    #start_test_dayでデータセットを分割
+    try:
+        iday = _time.index(START_TEST_DAY)
+    except:
+        print "can't find start_test_day"
+        
+    trainlist = _close[:iday]
+    testlist = _close[iday:]
+    
+    min_price = min(trainlist)
+    max_price = max(trainlist)
+    #train data
+    fw = open(t_folder + 'train(' + str(code) +').csv', 'w')
+    writer = csv.writer(fw, lineterminator='\n')
+    
+    datalist = trainlist
+    for i, price in enumerate(datalist):
+        inputlist = copy.copy(datalist[i:i + input_num])
+        outputlist = copy.copy(datalist[input_num + i:input_num + i + output_num])
+        normalizationArray(inputlist,min_price,max_price)
+        normalizationArray(outputlist,min_price,max_price)
+        
+        outputlist.append(min_price)
+        outputlist.append(max_price)
+        
+        writer.writerow(inputlist + outputlist)#train.csvに書き込み
+        train_count = train_count + 1
+        if i + input_num + output_num == len(datalist):
+            break
             
+    fw.close()
+    
+    #test data
+    
+    fw = open(t_folder + 'test(' + str(code) + ').csv', 'w')
+    writer = csv.writer(fw, lineterminator='\n')
+    
+    datalist = testlist
+    for i, price in enumerate(datalist):
+        inputlist = copy.copy(datalist[i:i + input_num])
+        outputlist = copy.copy(datalist[input_num + i:input_num + i + output_num])
+        
+        normalizationArray(inputlist,min_price,max_price)
+        normalizationArray(outputlist,min_price,max_price)
+        
+        outputlist.append(min_price)
+        outputlist.append(max_price)
+        
+        writer.writerow(inputlist + outputlist)#test.csvに書き込み
+        test_count = test_count + 1
+        if i + input_num + output_num == len(datalist):
+            break
+    fw.close()
+            
+    
+    print "train_count = %d" % train_count
+    print "test_count = %d" % test_count
+    print 'finished!!'
+    
 def make_dataset_2():#一定期間の株価から数日後の株価の値上がり率から売買シグナルを出力    
     start_test_day = 20090105 
     input_num = 70   
@@ -772,7 +847,9 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
     
 if __name__ == '__main__':
     print "start make dataset"
-    
+    make_dataset_code(9984,10,1)
+    print "end!"
+    raw_input()
     for i in range(10,101,10):
         make_dataset_5(i,"VOL",param1 = 14, param2 = 3, param3 = 3)
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
