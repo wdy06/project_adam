@@ -60,7 +60,20 @@ def normalizationArray(array,amin,amax):
     elif amin == amax:
         for i,element in enumerate(array):
             array[i] = float(0.5)
-        
+
+def denormalizationArray(array,amin,amax):
+    amin = float(amin)
+    amax = float(amax)
+    if amin != amax:
+        for i,element in enumerate(array):
+            if element == 1:
+                array[i] = amax
+            elif element == 0:
+                array[i] = amin
+            else:
+                ret = amin + float(element)*(amax - amin)
+                array[i] = ret
+    
 def data_completion():#欠損値を前日の価格で補完
     files = os.listdir("./ori_stockdata")
     for f in files:    
