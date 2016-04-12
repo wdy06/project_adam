@@ -133,9 +133,97 @@ def arrange_train_num(inputfile, outputfile):
     icsvdata.close()
     ocsvdata.close()
     print "end arrange"
+def getTeacherData(filename,start_test_day,next_day,input_num):
+    traindata = []
+    testdata = []
 
-def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = None, param1 = None, param2 = None, param3 = None):
+    _time = []
+    _open = []
+    _max = []
+    _min = []
+    _close = []
+    _volume = []
+    _keisu = []
+    _shihon = []
+    filepath = "./stockdata/%s" % filename
+    _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+
+    #start_test_dayでデータセットを分割
+    try:
+        iday = _time.index(start_test_day)
+    except:
+        print "can't find start_test_day"
+        #start_test_dayが見つからなければ次のファイルへ
+        return -1
+        
+        
+        
+    trainprice = _close[:iday]
+    testprice = _close[iday:]
+      
+    if len(trainprice) < input_num or len(testprice) < input_num:
+        return -1
     
+    price_min = min(trainprice)
+    price_max = max(trainprice)
+    
+    datalist = trainprice
+    
+    for i, price in enumerate(datalist):
+        if i % 2 == 0:
+            #全部は多すぎるので半分
+            continue
+        inputlist = copy.copy(datalist[i:i + input_num])
+        
+        
+        try:
+            now_price = datalist[i + input_num - 1]
+            predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+        except:
+            continue#datalistが短すぎる場合は飛ばす
+        outputlist = []
+        outputlist.append((predic_price - now_price) / now_price)
+        outputlist.append(price_min)
+        outputlist.append(price_max)
+        
+
+        normalizationArray(inputlist,price_min,price_max)
+        
+        traindata.append(inputlist + outputlist)
+        
+        
+        if i + input_num + next_day == len(datalist):
+            break
+        
+    
+    
+    datalist = testprice
+    
+    for i, price in enumerate(datalist):
+        if i % 2 == 0:
+            #全部は多すぎるので半分
+            continue
+        inputlist = copy.copy(datalist[i:i + input_num])
+        
+        try:
+            now_price = datalist[i + input_num - 1]
+            predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+        except:
+            continue#datalistが短すぎる場合は飛ばす
+        outputlist = []
+        outputlist.append((predic_price - now_price) / now_price)
+        outputlist.append(price_min)
+        outputlist.append(price_max)
+        
+        normalizationArray(inputlist,price_min,price_max)
+        
+        testdata.append(inputlist + outputlist)
+        if i + input_num + next_day == len(datalist):
+            break
+            
+    return traindata, testdata
+def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = None, param1 = None, param2 = None, param3 = None):
+    #株価とテクニカル指標の教師データを作成し、そのリストを返す
     traindata = []
     testdata = []
 
