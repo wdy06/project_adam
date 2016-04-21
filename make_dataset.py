@@ -183,9 +183,11 @@ def getTeacherData(filename,start_test_day,next_day,input_num):
     datalist = trainprice
     
     for i, price in enumerate(datalist):
+        """
         if i % 2 == 0:
             #全部は多すぎるので半分
             continue
+        """
         inputlist = copy.copy(datalist[i:i + input_num])
         
         
@@ -213,9 +215,11 @@ def getTeacherData(filename,start_test_day,next_day,input_num):
     datalist = testprice
     
     for i, price in enumerate(datalist):
+        """
         if i % 2 == 0:
             #全部は多すぎるので半分
             continue
+        """
         inputlist = copy.copy(datalist[i:i + input_num])
         
         try:
@@ -324,9 +328,11 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
         datalist_tech2 = traintech2
     
     for i, price in enumerate(datalist):
+        """
         if i % 2 == 0:
             #全部は多すぎるので半分
             continue
+        """
         inputlist = copy.copy(datalist[i:i + input_num])
         inputlist_tech1 = copy.copy(datalist_tech1[i:i + input_num])
         if tech_name in ("STOCH", "MACD"):
@@ -364,9 +370,11 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
         datalist_tech2 = testtech2
     
     for i, price in enumerate(datalist):
+        """
         if i % 2 == 0:
             #全部は多すぎるので半分
             continue
+        """
         inputlist = copy.copy(datalist[i:i + input_num])
         inputlist_tech1 = copy.copy(datalist_tech1[i:i + input_num])
         if tech_name in ("STOCH", "MACD"):
@@ -396,6 +404,7 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
             
     return traindata, testdata
 #------------------------------------------
+   
 def make_dataset_1():#一定期間の株価から翌日の株価を回帰予測    
     start_test_day = 20090105 
     input_num = 20
