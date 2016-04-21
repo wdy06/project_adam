@@ -169,10 +169,10 @@ def getTeacherData(filename,start_test_day,next_day,input_num):
         #start_test_dayが見つからなければ次のファイルへ
         return -1
         
+    cutpoint = iday - input_num + 1
         
-        
-    trainprice = _close[:iday]
-    testprice = _close[iday:]
+    trainprice = _close[:cutpoint]
+    testprice = _close[cutpoint:]
       
     if len(trainprice) < input_num or len(testprice) < input_num:
         return -1
@@ -284,21 +284,25 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
     elif tech_name == "VOL":
         tech1 = _volume
         
-        
-    _close = _close[2*param1:]
-    trainprice = _close[:iday]
-    testprice = _close[iday:]
+    cutpoint = iday - input_num + 1
     
-    tech1 = tech1[2*param1:]
-    traintech1 = tech1[:iday]
-    testtech1 = tech1[iday:]
+    #_close = _close[2*param1:]
+    trainprice = _close[:cutpoint]
+    testprice = _close[cutpoint:]
+    trainprice = trainprice[2*param1:]
+    
+    #tech1 = tech1[2*param1:]
+    traintech1 = tech1[:cutpoint]
+    testtech1 = tech1[cutpoint:]
+    traintech1 = traintech1[2*param1:]
     
     
     if tech_name in ("MACD", "STOCH"):
         
-        tech2 = tech2[2*param1:]
-        traintech2 = tech2[:iday]
-        testtech2 = tech2[iday:]
+        #tech2 = tech2[2*param1:]
+        traintech2 = tech2[:cutpoint]
+        testtech2 = tech2[cutpoint:]
+        traintech2 = traintech2[2*param1:]
     
     
     
