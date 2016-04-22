@@ -193,7 +193,10 @@ def getTeacherData(filename,start_test_day,next_day,input_num):
         
         try:
             now_price = datalist[i + input_num - 1]
-            predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            #predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            term_prices = datalist[i + input_num:i + input_num + next_day -1]
+            rec = [abs(x - now_price) for x in term_prices]
+            predic_price = term_prices[rec.index(max(rec))]
         except:
             continue#datalistが短すぎる場合は飛ばす
         outputlist = []
@@ -224,7 +227,10 @@ def getTeacherData(filename,start_test_day,next_day,input_num):
         
         try:
             now_price = datalist[i + input_num - 1]
-            predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            #predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            term_prices = datalist[i + input_num:i + input_num + next_day -1]
+            rec = [abs(x - now_price) for x in term_prices]
+            predic_price = term_prices[rec.index(max(rec))]
         except:
             continue#datalistが短すぎる場合は飛ばす
         outputlist = []
@@ -344,7 +350,10 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
         
         try:
             now_price = datalist[i + input_num - 1]
-            predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            #predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            term_prices = datalist[i + input_num:i + input_num + next_day -1]
+            rec = [abs(x - now_price) for x in term_prices]
+            predic_price = term_prices[rec.index(max(rec))]
         except:
             continue#datalistが短すぎる場合は飛ばす
         outputlist = []
@@ -386,7 +395,10 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
         
         try:
             now_price = datalist[i + input_num - 1]
-            predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            #predic_price = max(datalist[i + input_num:i + input_num + next_day -1])
+            term_prices = datalist[i + input_num:i + input_num + next_day -1]
+            rec = [abs(x - now_price) for x in term_prices]
+            predic_price = term_prices[rec.index(max(rec))]
         except:
             continue#datalistが短すぎる場合は飛ばす
         outputlist = []
@@ -980,7 +992,12 @@ if __name__ == '__main__':
     #print "end!"
     #raw_input()
     for i in xrange(10,101,10):
-        make_dataset_5(i,"VOL",param1 = 14, param2 = 3, param3 = 3)
+        #make_dataset_5(i,"VOL")
+        make_dataset_5(i,"RSI",param1 = 14)
+        make_dataset_5(i,"EMA",param1 = 10)
+        #make_dataset_5(i,"MACD",param1 = 12, param2 = 26, param3 = 9)
+        #make_dataset_5(i,"WILLR",param1 = 14)
+        
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
     #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
