@@ -52,7 +52,7 @@ def listToCsv(filename,l1=None,l2=None,l3=None,l4=None,l5=None,l6=None,l7=None):
     
 def loadModel(modelpath):
     with open(modelpath, 'rb') as i:
-    print "open " + modelpath
-    model = pickle.load(i)
-    return model
+        print "open " + modelpath
+        model = pickle.load(i)
+        return model
     
