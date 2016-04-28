@@ -23,21 +23,10 @@ def getClose(code, start_day):
     
     return _close
     
-def listToCsv(filename,l1=None,l2=None,l3=None,l4=None,l5=None,l6=None,l7=None):
+def listToCsv(filename,*args):
     data = []
-    data.append(l1)
-    if l2 is not None:
-        data.append(l2)
-    if l3 is not None:
-        data.append(l3)
-    if l4 is not None:
-        data.append(l4)
-    if l5 is not None:
-        data.append(l5)
-    if l6 is not None:
-        data.append(l6)
-    if l7 is not None:
-        data.append(l7)
+    for i in range(len(args)):
+        data.append(args[i])
     
     
     data = np.array(data).transpose()
