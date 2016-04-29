@@ -27,10 +27,8 @@ import csv
 parser = argparse.ArgumentParser(description='Chainer example: MNIST')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
-parser.add_argument('--trainfile', '-f1', default='train.csv', type=str,
-                    help='train file name')
-parser.add_argument('--testfile', '-f2', default='test.csv', type=str,
-                    help='test file name')
+parser.add_argument('trainfile', help='Path to train file name')
+parser.add_argument('testfile', help='Path to test file name')
 parser.add_argument('--experiment_name', '-n', default='experiment', type=str,
                     help='experiment name')
 parser.add_argument('--epoch', '-E', default=2000, type=int,
@@ -88,6 +86,10 @@ elif args.arch == 'dnn_5':
     import dnn_5
     model = dnn_5.Regression_DNN(args.input, args.hidden)
     print 'model is dnn5'
+elif args.arch == 'cnn_5':
+    import cnn_5
+    model = cnn_5.Regression_CNN(args.input)
+    print 'model is cnn_5'
 else:
     raise ValueError('Invalid architecture name')
 
