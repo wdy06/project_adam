@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from __future__ import print_function
 import argparse
@@ -30,10 +31,8 @@ import cyfuncs
 parser = argparse.ArgumentParser(description='Chainer example: MNIST')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
-parser.add_argument('--trainfile', '-f1', default='train.csv', type=str,
-                    help='train file name')
-parser.add_argument('--testfile', '-f2', default='test.csv', type=str,
-                    help='test file name')
+parser.add_argument('trainfile', help='Path to train file name')
+parser.add_argument('testfile', help='Path to test file name')
 parser.add_argument('--experiment_name', '-n', default='experiment', type=str,
                     help='experiment name')
 parser.add_argument('--epoch', '-E', default=2000, type=int,
@@ -47,7 +46,7 @@ parser.add_argument('--input', '-in', default=60, type=int,
                     help='input node number')                    
 parser.add_argument('--hidden', '-hn', default=100, type=int,
                     help='hidden node number')
-parser.add_argument('--loaderjob', '-j', default=20, type=int,
+parser.add_argument('--loaderjob', '-j', default=2, type=int,
                     help='Number of parallel data loading processes')
 args = parser.parse_args()
 if args.gpu >= 0:
@@ -70,6 +69,9 @@ elif args.arch == 'dnn_5':
     import dnn_5
     model = dnn_5.Regression_DNN(args.input, args.hidden)
     print ('model is dnn5')
+elif args.arch == 'cnn_5':
+    import cnn_5
+    model = cnn_5.Regression_CNN(args.input)
 else:
     raise ValueError('Invalid architecture name')
 
@@ -266,8 +268,8 @@ def log_result():
 
             val_loss += loss
             #val_accuracy += accuracy
-            if val_count == 100:
-                mean_loss = val_loss * args.batchsize / 100
+            if val_count == 10000:
+                mean_loss = val_loss * args.batchsize / 10000
                 test_loss_list.append(mean_loss)
                 #mean_error = 1 - val_accuracy * args.batchsize / 50000
                 print(file=sys.stderr)
@@ -316,13 +318,13 @@ def train_loop():
         else:
             loss = model.forward(x, y, train=False)
         
-        if epoch_count % 10 == 0:
-        print 'save model'
-        model.to_cpu()
-        with open(folder + 'model_' + str(epoch_count), 'wb') as o:
-            pickle.dump(model, o)
-        model.to_gpu()#もう一度GPUに戻すのか？
-        optimizer.setup(model)
+        if epoch_count % 1 == 0:
+            print ('save model')
+            model.to_cpu()
+            with open(folder + 'model_' + str(epoch_count), 'wb') as o:
+                pickle.dump(model, o)
+            model.to_gpu()#もう一度GPUに戻すのか？
+            optimizer.setup(model)
         
         res_q.put(float(loss.data))
         del loss, x, y
