@@ -168,7 +168,10 @@ def sprit_batch(listbatch):
         raw_input()
     return x_batch, y_batch
 
-
+def batchToChannel(batch,bsize,input_num):
+    batch = np.reshape(batch,(bsize,-1,input_num))
+    return batch
+    
 epoch_count=0
 
 def feed_data():
