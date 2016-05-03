@@ -189,6 +189,7 @@ def feed_data():
         for i in range(0, N, args.batchsize):
             batch = pool.apply_async(cyfuncs.read_batch2, (trainfile, perm[i:i + args.batchsize]))
             x_batch, y_batch = sprit_batch(batch.get())
+            x_batch = batchToChannel(x_batch,len(x_batch),model.input_num)
             data_q.put((x_batch.copy(), y_batch.copy()))
             del batch, x_batch, y_batch
             gc.collect()
@@ -199,6 +200,7 @@ def feed_data():
                 for l in range(0, N_test, args.batchsize):
                     val_batch = pool.apply_async(cyfuncs.read_batch2, (testfile, range(l, l + args.batchsize)))
                     val_x_batch, val_y_batch = sprit_batch(val_batch.get())
+                    val_x_batch = batchToChannel(val_x_batch,len(val_x_batch),model.input_num)
                     data_q.put((val_x_batch.copy(), val_y_batch.copy()))
                     del val_batch, val_x_batch, val_y_batch
                     gc.collect()
