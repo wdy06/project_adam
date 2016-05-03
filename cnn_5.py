@@ -87,9 +87,10 @@ class Regression_CNN(chainer.FunctionSet):
     def forward(self, x_data, y_data, train=True):
         #print y_data
         batchsize = len(x_data)
+        csize = len(x_data[0])
         
         x, t = chainer.Variable(x_data,volatile=not train), chainer.Variable(y_data,volatile=not train)
-        h = F.reshape(x,(batchsize,1,-1,1))
+        h = F.reshape(x,(batchsize,csize,-1,1))
         h = self.conv1(h)
         h = F.reshape(h,(batchsize,10,-1))
         h = F.tanh(h)
@@ -111,6 +112,9 @@ class Regression_CNN(chainer.FunctionSet):
         
     def predict(self, x_data, train=False):
         #print y_data
+        batchsize = len(x_data)
+        csize = len(x_data[0])
+        
         x = chainer.Variable(x_data,volatile=True)
         h = F.reshape(x,(batchsize,1,-1,1))
         h = self.conv1(h)
