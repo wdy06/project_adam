@@ -88,7 +88,7 @@ class Regression_CNN(chainer.FunctionSet):
         #print y_data
         batchsize = len(x_data)
         
-        x, t = chainer.Variable(x_data), chainer.Variable(y_data)
+        x, t = chainer.Variable(x_data,volatile=not train), chainer.Variable(y_data,volatile=not train)
         h = F.reshape(x,(batchsize,1,-1,1))
         h = self.conv1(h)
         h = F.reshape(h,(batchsize,10,-1))
@@ -111,7 +111,7 @@ class Regression_CNN(chainer.FunctionSet):
         
     def predict(self, x_data, train=False):
         #print y_data
-        x = chainer.Variable(x_data)
+        x = chainer.Variable(x_data,volatile=True)
         h = F.reshape(x,(batchsize,1,-1,1))
         h = self.conv1(h)
         h = F.reshape(h,(batchsize,10,-1))
