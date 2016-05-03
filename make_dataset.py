@@ -554,7 +554,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         rec = np.ndarray.tolist(rec)
         f_traindata.append(rec + [train_output[i]] + [price_min] + [price_max])
         
-    print np.array(f_traindata).shape
+    #print np.array(f_traindata).shape
     
     f_testdata = []
     for i in range(0,len(testdata[0]),stride):
@@ -564,8 +564,8 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         
         rec = np.ndarray.tolist(rec)
         f_testdata.append(rec + [test_output[i]] + [price_min] + [price_max])
-    print np.array(f_testdata).shape
-    raw_input()
+    #print np.array(f_testdata).shape
+    #raw_input()
     return f_traindata,f_testdata
 #------------------------------------------
    
@@ -1135,7 +1135,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
     print 'finished!!'
     
     
-def make_dataset_6(inputnum):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
+def make_dataset_6(fname,inputnum,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
     print 'make_dataset_6'
     start_test_day = 20090105 
     input_num = inputnum
@@ -1143,8 +1143,8 @@ def make_dataset_6(inputnum):#一定期間の株価,テクニカル指標から�
     
     train_count = 0
     test_count = 0
-    fpath1 = t_folder + 'train_m_' +  str(input_num) + '.csv'
-    fpath2 = t_folder + 'test_m_' +  str(input_num) + '.csv'
+    fpath1 = t_folder + 'train_' + str(fname) + str(input_num) + '.csv'
+    fpath2 = t_folder + 'test_' + str(fname) +  str(input_num) + '.csv'
     fw1 = open(fpath1, 'w')
     fw2 = open(fpath2, 'w')
     writer1 = csv.writer(fw1, lineterminator='\n')
@@ -1154,7 +1154,7 @@ def make_dataset_6(inputnum):#一定期間の株価,テクニカル指標から�
     for k, f in enumerate(files):
         print f, k
         try:
-            train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,u_rsi=True)
+            train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
         except:
             continue
         writer1.writerows(train)
@@ -1173,8 +1173,10 @@ if __name__ == '__main__':
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
-    make_dataset_6(10)
+    make_dataset_6('volEmaMacd',30,u_vol=True,u_macd=True,u_ema=True)
+    make_dataset_6('volRsiStoch',30,u_vol=True,u_rsi=True,u_stoch=True)
     print 'finished!!!!!!!!!!!!!!'
+    """
     raw_input()
     for i in xrange(10,101,10):
         make_dataset_5(i,tech_name="VOL",param1=0)
@@ -1182,7 +1184,7 @@ if __name__ == '__main__':
         make_dataset_5(i,"EMA",param1 = 10)
         make_dataset_5(i,"MACD",param1 = 12, param2 = 26, param3 = 9)
         make_dataset_5(i,"WILLR",param1 = 14)
-        
+    """
     #arrange_train_num("tmp_tech_train.csv", "train70.csv")
     #arrange_train_num("tmp_tech_test.csv", "test70.csv") 
     
