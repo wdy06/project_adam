@@ -160,7 +160,7 @@ def sprit_batch(listbatch):
     
     batch = np.array(listbatch).astype(np.float32)
     try:
-        x_batch = batch[:, :model.input_num]
+        x_batch = batch[:, :-output_num-2]
         y_batch = batch[:, -output_num-2:-2]
     except:
         print (batch.shape)
