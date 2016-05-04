@@ -45,3 +45,17 @@ def loadModel(modelpath):
         model = pickle.load(i)
         return model
     
+def checkNanInData(filepath):
+    
+    f = open(filepath,'rb')
+    reader = csv.reader(f)
+    count = 0
+    for row in reader:
+        count += 1
+        if np.nan in row:
+            print 'find NaN !!!' ,count
+        
+    f.close()   
+    print 'can not find np.nan'
+    print 'finish'
+    
