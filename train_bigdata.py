@@ -46,6 +46,8 @@ parser.add_argument('--input', '-in', default=60, type=int,
                     help='input node number')                    
 parser.add_argument('--hidden', '-hn', default=100, type=int,
                     help='hidden node number')
+parser.add_argument('--channel', '-c', default=1, type=int,
+                    help='data channel')                    
 parser.add_argument('--loaderjob', '-j', default=2, type=int,
                     help='Number of parallel data loading processes')
 args = parser.parse_args()
@@ -71,7 +73,7 @@ elif args.arch == 'dnn_5':
     print ('model is dnn5')
 elif args.arch == 'cnn_5':
     import cnn_5
-    model = cnn_5.Regression_CNN()
+    model = cnn_5.Regression_CNN(args.channel)
 else:
     raise ValueError('Invalid architecture name')
 
@@ -103,6 +105,7 @@ with open(folder + 'settings.txt', 'wb') as o:
     o.write('input:' + str(model.input_num) + '\n')
     o.write('hidden:' + str(model.hidden_num) + '\n')
     o.write('layer_num:' + str(model.layer_num) + '\n')
+    o.write('channel_num:' + str(args.channel) + '\n')
     o.write('batchsize:' + str(args.batchsize) + '\n')
     o.write(args.trainfile + ':' + args.testfile + '\n')
 
@@ -189,7 +192,7 @@ def feed_data():
         for i in range(0, N, args.batchsize):
             batch = pool.apply_async(cyfuncs.read_batch2, (trainfile, perm[i:i + args.batchsize]))
             x_batch, y_batch = sprit_batch(batch.get())
-            x_batch = batchToChannel(x_batch,len(x_batch),model.input_num)
+            x_batch = batchToChannel(x_batch,len(x_batch),args.input)
             data_q.put((x_batch.copy(), y_batch.copy()))
             del batch, x_batch, y_batch
             gc.collect()
@@ -200,7 +203,7 @@ def feed_data():
                 for l in range(0, N_test, args.batchsize):
                     val_batch = pool.apply_async(cyfuncs.read_batch2, (testfile, range(l, l + args.batchsize)))
                     val_x_batch, val_y_batch = sprit_batch(val_batch.get())
-                    val_x_batch = batchToChannel(val_x_batch,len(val_x_batch),model.input_num)
+                    val_x_batch = batchToChannel(val_x_batch,len(val_x_batch),args.input)
                     data_q.put((val_x_batch.copy(), val_y_batch.copy()))
                     del val_batch, val_x_batch, val_y_batch
                     gc.collect()
