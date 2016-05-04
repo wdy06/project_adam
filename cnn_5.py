@@ -57,10 +57,10 @@ class Regression_CNN(chainer.FunctionSet):
     #batchsize = 10000
     
     
-    def __init__(self):
+    def __init__(self,channel):
         self.input_num = None
         self.hidden_num = None
-        
+        self.channel = channel
         """
         super(Regression_CNN, self).__init__(
             fc1=F.Linear(self.input_num, self.hidden_num),
@@ -73,7 +73,7 @@ class Regression_CNN(chainer.FunctionSet):
         super(Regression_CNN, self).__init__(
             #batchsize = self.batchsize,
             
-            conv1=F.Convolution2D(1, 10, (3,1)),
+            conv1=F.Convolution2D(channel, 10, (3,1)),
             #1x1xinput -> 10x10x(input - 2)
             conv2=F.Convolution2D(10, 10, (5,1)),
             #10x10x(input - 2) -> 100x100x(input - 2*2)
