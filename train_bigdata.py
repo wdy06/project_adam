@@ -71,7 +71,7 @@ elif args.arch == 'dnn_5':
     print ('model is dnn5')
 elif args.arch == 'cnn_5':
     import cnn_5
-    model = cnn_5.Regression_CNN(args.input)
+    model = cnn_5.Regression_CNN()
 else:
     raise ValueError('Invalid architecture name')
 
@@ -323,7 +323,7 @@ def train_loop():
         else:
             loss = model.forward(x, y, train=False)
         
-        if epoch_count % 1 == 0:
+        if epoch_count % 2 == 0:
             print ('save model')
             model.to_cpu()
             with open(folder + 'model_' + str(epoch_count), 'wb') as o:
