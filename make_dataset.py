@@ -439,7 +439,6 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
     traindata = []
     testdata = []
     #print tech_name
-    
     filepath = "./stockdata/%s" % filename
     _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
 
@@ -470,8 +469,10 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
     if u_ema == True:
         ema_list = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 10)
         ema_list = np.ndarray.tolist(ema_list)
-        t_min = min(ema_list[:cutpoint])
-        t_max = max(ema_list[:cutpoint])
+        t_min = np.nanmin(ema_list[:cutpoint])
+        t_max = np.nanmax(ema_list[:cutpoint])
+        if (t_min == np.nan) or (t_max == np.nan):
+            return -1
         normalizationArray(ema_list,t_min,t_max)
         all_data.append(ema_list)
         
@@ -486,8 +487,11 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         macd_list,signal,hist = ta.MACD(np.array(_close, dtype='f8'), fastperiod = 12, slowperiod = 26, signalperiod = 9)
         macd_list = np.ndarray.tolist(macd_list)
         signal = np.ndarray.tolist(signal)
-        t_min = min(macd_list[:cutpoint])
-        t_max = max(macd_list[:cutpoint])
+        
+        t_min = np.nanmin(macd_list[:cutpoint])
+        t_max = np.nanmax(macd_list[:cutpoint])
+        if (t_min == np.nan) or (t_max == np.nan):
+            return -1
         normalizationArray(macd_list,t_min,t_max)
         normalizationArray(signal,t_min,t_max)
         all_data.append(macd_list)
@@ -1174,7 +1178,7 @@ if __name__ == '__main__':
     #print "end!"
     #raw_input()
     make_dataset_6('volEmaMacd',30,u_vol=True,u_macd=True,u_ema=True)
-    make_dataset_6('volRsiStoch',30,u_vol=True,u_rsi=True,u_stoch=True)
+    #make_dataset_6('volRsiStoch',30,u_vol=True,u_rsi=True,u_stoch=True)
     print 'finished!!!!!!!!!!!!!!'
     """
     raw_input()
