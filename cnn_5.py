@@ -90,6 +90,8 @@ class Regression_CNN(chainer.FunctionSet):
         csize = len(x_data[0])
         
         x, t = chainer.Variable(x_data,volatile=not train), chainer.Variable(y_data,volatile=not train)
+        x = F.reshape(x,(batchsize,csize,-1))
+        
         h = F.reshape(x,(batchsize,csize,-1,1))
         h = self.conv1(h)
         h = F.reshape(h,(batchsize,10,-1))
