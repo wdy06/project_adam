@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import csv
 import numpy as np
+import six.moves.cPickle as pickle
 
 def codeToFname(code):
     return 'stock(' + str(code) + ').CSV'
