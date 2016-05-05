@@ -87,7 +87,8 @@ class Regression_CNN(chainer.FunctionSet):
     def forward(self, x_data, y_data, train=True):
         #print y_data
         batchsize = len(x_data)
-        csize = len(x_data[0])
+        #csize = len(x_data[0])
+        csize = self.channel
         
         x, t = chainer.Variable(x_data,volatile=not train), chainer.Variable(y_data,volatile=not train)
         x = F.reshape(x,(batchsize,csize,-1))
