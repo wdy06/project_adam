@@ -112,7 +112,7 @@ csvdata = open(t_folder + args.trainfile,'rb')
 reader = csv.reader(csvdata)
 print args.trainfile
 for row in reader:
-    x_train.append(row[:model.input_num])
+    x_train.append(row[:-output_num-2])
     y_train.append(row[-output_num-2:-2])
 csvdata.close()
 print 'test_file is ' + args.testfile
@@ -120,7 +120,7 @@ csvdata = open(t_folder + args.testfile,'rb')
 reader = csv.reader(csvdata)
 print args.testfile
 for row in reader:
-    x_test.append(row[:model.input_num])
+    x_test.append(row[:-output_num-2])
     y_test.append(row[-output_num-2:-2])
 csvdata.close()
 
@@ -165,16 +165,17 @@ for epoch in range(1,n_epoch + 1):
     perm = np.random.permutation(N)
     sum_loss = 0
     for i in range(0, N, batchsize):
+        #print i
         x_batch = xp.asarray(x_train[perm[i:i + batchsize]])
         y_batch = xp.asarray(y_train[perm[i:i + batchsize]])
         #print count        
         count+=1
-        
+        #print 'start backward'
         optimizer.zero_grads()
         loss = model.forward(x_batch, y_batch)
         loss.backward()
         optimizer.update()
-        
+        #print 'finish backwark'
         if epoch == 1 and i == 0:
             with open(folder + "graph.dot", "w") as o:
                 o.write(c.build_computational_graph((loss, )).dump())
@@ -194,6 +195,7 @@ for epoch in range(1,n_epoch + 1):
     # evaluation
     sum_loss = 0
     for i in range(0, N_test, batchsize):
+        #print i
         x_batch = xp.asarray(x_test[i:i + batchsize])
         y_batch = xp.asarray(y_test[i:i + batchsize])
         
