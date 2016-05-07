@@ -1139,7 +1139,7 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
     print 'finished!!'
     
     
-def make_dataset_6(fname,inputnum,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
+def make_dataset_6(fname,inputnum,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
     print 'make_dataset_6'
     start_test_day = 20090105 
     input_num = inputnum
@@ -1158,9 +1158,9 @@ def make_dataset_6(fname,inputnum,u_vol=False,u_ema=False,u_rsi=False,u_macd=Fal
     for k, f in enumerate(files):
         print f, k
         try:
-            train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
+            train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,stride=stride,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
         except:
-            continue
+            print 'skip',f
         writer1.writerows(train)
         writer2.writerows(test)
             
@@ -1177,7 +1177,10 @@ if __name__ == '__main__':
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
-    make_dataset_6('volEmaMacd',30,u_vol=True,u_macd=True,u_ema=True)
+    #make_dataset_6('volEmaMacd',30,u_vol=True,u_macd=True,u_ema=True)
+    make_dataset_6('macdtest',30,u_macd=True)
+    #make_dataset_6('ematest',30,u_ema=True)
+    #make_dataset_6('ocirator',30,u_vol=True,u_rsi=True,u_stoch=True,u_wil=True)
     #make_dataset_6('volRsiStoch',30,u_vol=True,u_rsi=True,u_stoch=True)
     print 'finished!!!!!!!!!!!!!!'
     """
