@@ -25,6 +25,26 @@ def getClose(code, start_day=None):
     
     return _close
     
+def getTime(code, start_day=None):
+    _time = []
+    
+    filename = './stockdata/' + codeToFname(code)
+    f = open(filename,'rb')
+    reader = csv.reader(f)
+    next(reader)
+    for row in reader:
+        _time.append(float(row[0]))
+        
+        
+    f.close()   
+    
+    
+    if start_day != None:
+        iday = _time.index(start_day)
+        _time = _time[iday:]
+    
+    return _time
+    
 def listToCsv(filename,*args):
     data = []
     for i in range(len(args)):
