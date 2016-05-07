@@ -70,7 +70,7 @@ print ('N_test = ', N_test)
 
 sum_loss = 0
 for i in range(0,N,args.batchsize):
-    print 'checking train data... ', i
+    print 'checking train data... ', i,' / ',N
     batch = read_batch2(trainfile,range(i,i+args.batchsize))
     x_batch, y_batch = sprit_batch(batch)
     
@@ -85,7 +85,7 @@ val_sum_loss = 0
 print 'train error is ',(sum_loss/N)
 
 for i in range(0,N_test,args.batchsize):
-    print 'checking test data... ',i
+    print 'checking test data... ',i,'/',N_test
     val_batch = read_batch2(testfile,range(i,i+args.batchsize))
     val_x_batch, val_y_batch = sprit_batch(val_batch)
     
