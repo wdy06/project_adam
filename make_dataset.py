@@ -448,7 +448,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
     except:
         print "can't find start_test_day"
         #start_test_dayが見つからなければ次のファイルへ
-        return -1
+        return -1,-1
     
     cutpoint = iday - input_num + 1
     
@@ -472,7 +472,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         t_min = np.nanmin(ema_list[:cutpoint])
         t_max = np.nanmax(ema_list[:cutpoint])
         if (t_min == np.nan) or (t_max == np.nan):
-            return -1
+            return -1,-1
         normalizationArray(ema_list,t_min,t_max)
         all_data.append(ema_list)
         
@@ -491,7 +491,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         t_min = np.nanmin(macd_list[:cutpoint])
         t_max = np.nanmax(macd_list[:cutpoint])
         if (t_min == np.nan) or (t_max == np.nan):
-            return -1
+            return -1,-1
         normalizationArray(macd_list,t_min,t_max)
         normalizationArray(signal,t_min,t_max)
         all_data.append(macd_list)
@@ -525,7 +525,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
     trainprice = trainprice[30:]
     
     if (len(traindata[0]) < input_num) or (len(testdata[0]) < input_num):
-        return -1
+        return -1,-1
     
     train_output = []
     trainprice = trainprice[input_num - 1:]
