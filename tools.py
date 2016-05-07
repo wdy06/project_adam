@@ -7,7 +7,7 @@ import six.moves.cPickle as pickle
 def codeToFname(code):
     return 'stock(' + str(code) + ').CSV'
     
-def getClose(code, start_day):
+def getClose(code, start_day=None):
     _time = []
     _close = []
     filename = './stockdata/' + codeToFname(code)
@@ -20,7 +20,8 @@ def getClose(code, start_day):
         
     f.close()   
     
-    _close = _close[_time.index(start_day):]
+    if start_day != None:
+        _close = _close[_time.index(start_day):]
     
     return _close
     
