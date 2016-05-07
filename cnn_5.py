@@ -94,31 +94,44 @@ class Regression_CNN(chainer.FunctionSet):
         x = F.reshape(x,(batchsize,csize,-1))
         
         h = F.reshape(x,(batchsize,csize,-1,1))
+        #print h.data
+        #print 'ddd'
         h = self.conv1(h)
+        #print self.conv1.W
+        #print 'weight'
+        #print h.data
+        #print 'eeee'
         h = F.reshape(h,(batchsize,10,-1))
+        
         h = F.tanh(h)
         
+        #raw_input()
         h = F.reshape(h,(batchsize,10,-1,1))
         h = self.conv2(h)
         h = F.reshape(h,(batchsize,10,-1))
         h = F.tanh(h)
-        
+        #print h.data
+        #raw_input()
         h = F.reshape(h,(batchsize,10,-1,1))
         h = self.conv3(h)
         h = F.reshape(h,(batchsize,100,-1))
         h = F.tanh(h)
-        
+        #print h.data
+        #raw_input()
         h = F.dropout(F.tanh(self.fc4(h)), train=train)
         y = self.fc5(h)
-        
+        #print y.data
+        #raw_input()
         return F.mean_squared_error(y, t)
         
     def predict(self, x_data, train=False):
         #print y_data
         batchsize = len(x_data)
-        csize = len(x_data[0])
+        csize = self.channel
         
         x = chainer.Variable(x_data,volatile=True)
+        x = F.reshape(x,(batchsize,csize,-1))
+        
         h = F.reshape(x,(batchsize,1,-1,1))
         h = self.conv1(h)
         h = F.reshape(h,(batchsize,10,-1))
