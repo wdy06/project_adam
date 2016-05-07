@@ -1157,10 +1157,12 @@ def make_dataset_6(fname,inputnum,stride=2,u_vol=False,u_ema=False,u_rsi=False,u
     files = os.listdir("./stockdata")
     for k, f in enumerate(files):
         print f, k
-        try:
-            train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,stride=stride,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
-        except:
+        
+        train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,stride=stride,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
+        if (train == -1) or (test == -1):
             print 'skip',f
+            continue
+            
         writer1.writerows(train)
         writer2.writerows(test)
             
