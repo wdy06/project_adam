@@ -81,3 +81,6 @@ def checkNanInData(filepath):
     print 'can not find np.nan'
     print 'finish'
     
+def split_list(list,size):
+#リストをｎ個ずつのサブリストに分割
+    return [list[x:x + size] for x in xrange(0, len(list), size)]
