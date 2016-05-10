@@ -75,6 +75,9 @@ elif args.arch == 'dnn_5':
 elif args.arch == 'cnn_5':
     import cnn_5
     model = cnn_5.Regression_CNN(args.channel)
+elif args.arch == 'cnn_6':
+    import cnn_6
+    model = cnn_6.Regression_CNN(args.channel)
 else:
     raise ValueError('Invalid architecture name')
 
