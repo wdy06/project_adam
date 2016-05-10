@@ -27,6 +27,7 @@ from chainer import cuda
 from chainer import optimizers
 
 import cyfuncs
+import tools
 
 parser = argparse.ArgumentParser(description='Chainer example: MNIST')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
@@ -256,6 +257,7 @@ def log_result():
             if train_count % 10 == 0:
                 mean_loss = train_cur_loss / 10
                 train_loss_list.append(mean_loss)
+                tools.listToCsv(folder+'trainloss.csv',train_loss_list)
                 #mean_error = 1 - train_cur_accuracy / 1000
                 print(file=sys.stderr)
                 print(json.dumps({'type': 'train', 'iteration': train_count,
