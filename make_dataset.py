@@ -51,6 +51,8 @@ def normalizationArray(array,amin,amax):
                 array[i] = 1
             elif element < amin:
                 array[i] = 0
+            elif element == np.nan:
+                array[i] = np.nan
             else:
                 ret = (float(element) - amin) / (amax - amin)
                 array[i] = ret
@@ -59,6 +61,26 @@ def normalizationArray(array,amin,amax):
         for i,element in enumerate(array):
             array[i] = float(0.5)
 
+def normalizationArray2(array,amin,amax):
+    #processing array index to -1~1
+    amin = float(amin)
+    amax = float(amax)
+    if amin != amax:
+        for i,element in enumerate(array):
+            if element > amax:
+                array[i] = 1
+            elif element < amin:
+                array[i] = -1
+            elif element == np.nan:
+                array[i] = np.nan
+            else:
+                ret = -1 + (2*(float(element) - amin) / (amax - amin))
+                array[i] = ret
+    #期間の最大最小が等しい場合はすべての要素を0.5とする
+    elif amin == amax:
+        for i,element in enumerate(array):
+            array[i] = float(0)
+            
 def denormalizationArray(array,amin,amax):
     amin = float(amin)
     amax = float(amax)
@@ -492,8 +514,8 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         t_max = np.nanmax(macd_list[:cutpoint])
         if (t_min == np.nan) or (t_max == np.nan):
             return -1,-1
-        normalizationArray(macd_list,t_min,t_max)
-        normalizationArray(signal,t_min,t_max)
+        normalizationArray2(macd_list,t_min,t_max)
+        normalizationArray2(signal,t_min,t_max)
         all_data.append(macd_list)
         all_data.append(signal)
         
