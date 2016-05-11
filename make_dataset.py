@@ -489,13 +489,17 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,
         all_data.append(vol_list)
         
     if u_ema == True:
-        ema_list = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 10)
-        ema_list = np.ndarray.tolist(ema_list)
+        ema_list1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 10)
+        ema_list2 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 25)
+        ema_list1 = np.ndarray.tolist(ema_list1)
+        ema_list2 = np.ndarray.tolist(ema_list2)
         t_min = min(_close[:cutpoint])
         t_max = max(_close[:cutpoint])
         
-        normalizationArray(ema_list,t_min,t_max)
-        all_data.append(ema_list)
+        normalizationArray(ema_list1,t_min,t_max)
+        normalizationArray(ema_list2,t_min,t_max)
+        all_data.append(ema_list1)
+        all_data.append(ema_list2)
         
     if  u_rsi == True:
         rsi_list = ta.RSI(np.array(_close, dtype='f8'), timeperiod = 14)
