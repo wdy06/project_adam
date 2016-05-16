@@ -72,6 +72,10 @@ elif args.arch == 'dnn_5':
     import dnn_5
     model = dnn_5.Regression_DNN(args.input, args.hidden)
     print ('model is dnn5')
+elif args.arch == 'dnn_6':
+    import dnn_6
+    model = dnn_6.Regression_DNN(args.input, args.hidden)
+    print ('model is dnn6')
 elif args.arch == 'cnn_5':
     import cnn_5
     model = cnn_5.Regression_CNN(args.channel)
