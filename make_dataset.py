@@ -454,7 +454,7 @@ def getTeacherDataTech(filename,start_test_day,next_day,input_num, tech_name = N
             
     return traindata, testdata
     
-def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):
+def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):
     
     #株価と複数のテクニカル指標の教師データを作成し、そのリストを返す
     all_data = []
@@ -1204,8 +1204,8 @@ if __name__ == '__main__':
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
-    #make_dataset_6('volEmaMacd',30,u_vol=True,u_macd=True,u_ema=True)
-    make_dataset_6('macdtest',30,u_macd=True)
+    make_dataset_6('volemarsistoch',30,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    #make_dataset_6('macdtest',30,u_macd=True)
     #make_dataset_6('ematest',30,u_ema=True)
     #make_dataset_6('ocirator',30,u_vol=True,u_rsi=True,u_stoch=True,u_wil=True)
     #make_dataset_6('volRsiStoch',30,u_vol=True,u_rsi=True,u_stoch=True)
