@@ -19,22 +19,41 @@ import chainer.functions  as F
 
 START_TEST_DAY = 20090105
 NEXT_DAY = 5
+output_num = 1
 
 parser = argparse.ArgumentParser(description='check result of model prediction')
 #parser.add_argument('checkfile', help='Path to check file name')
+parser.add_argument('--gpu', '-g', default=-1, type=int,
+                    help='GPU ID (negative value indicates CPU)')
 parser.add_argument('code', help='stock code you check')
 parser.add_argument('model', help='Path to model')
-parser.add_argument('model_input_num', help='model input number',type=int)
-parser.add_argument('price_input_num', help='price input number',type=int)
-parser.add_argument('--tech','-t',default=None,
-                    help='use tech or No')
-parser.add_argument('--param1', '-p1', default=None, type=int,
-                    help='tech param1')
-parser.add_argument('--param2', '-p2', default=None, type=int,
-                    help='tech param2')
-parser.add_argument('--param3', '-p3', default=None, type=int,
-                    help='tech param3')
+parser.add_argument('input_num', help='model input number',type=int)
+parser.add_argument('--u_vol', '-vol',type=int,default=0,
+                    help='use vol or no')
+parser.add_argument('--u_ema', '-ema',type=int,default=0,
+                    help='use ema or no')
+parser.add_argument('--u_rsi', '-rsi',type=int,default=0,
+                    help='use rsi or no')
+parser.add_argument('--u_macd', '-macd',type=int,default=0,
+                    help='use macd or no')
+parser.add_argument('--u_stoch', '-stoch',type=int,default=0,
+                    help='use stoch or no')
+parser.add_argument('--u_wil', '-wil',type=int,default=0,
+                    help='use wil or no')
 args = parser.parse_args()
+
+if args.u_vol == 0: u_vol = False
+elif args.u_vol == 1: u_vol = True
+if args.u_ema == 0: u_ema = False
+elif args.u_ema == 1: u_ema = True
+if args.u_rsi == 0: u_rsi = False
+elif args.u_rsi == 1: u_rsi = True
+if args.u_macd == 0: u_macd = False
+elif args.u_macd == 1: u_macd = True
+if args.u_stoch == 0: u_stoch = False
+elif args.u_stoch == 1: u_stoch = True
+if args.u_wil == 0: u_wil = False
+elif args.u_wil == 1: u_wil = True
 
 #モデルの読み込み
 with open(args.model, 'rb') as m:
@@ -42,25 +61,26 @@ with open(args.model, 'rb') as m:
     model = pickle.load(m)
     print 'load model'
 
+if args.gpu >= 0:
+    cuda.check_cuda_available()
+    print "use gpu"
+    xp = cuda.cupy if args.gpu >= 0 else np
+    model.to_gpu()
+
 outputlist = []
 predictlist = []
 error = []
 
 file = tools.codeToFname(args.code)
 
-if args.tech == None:
-    print 'use price only'
-    train, test = md.getTeacherData(file,START_TEST_DAY,NEXT_DAY,args.price_input_num)
-elif args.tech != None:
-    print 'use price and technical indicator'
-    train, test = md.getTeacherDataTech(file,START_TEST_DAY,NEXT_DAY,args.price_input_num,args.tech,args.param1,args.param2,args.param3)
 
-
+train, test = md.getTeacherDataMultiTech(file,START_TEST_DAY,NEXT_DAY,args.input_num,stride=1,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
 
 for row in test:
-    inputlist = row[:args.model_input_num]
-    output = row[args.model_input_num]
-    y = model.predict(np.array([inputlist]).astype(np.float32))
+    inputlist = row[:-output_num-2]
+    output = row[-output_num-2]
+    inputlist = np.array([inputlist]).astype(np.float32)
+    y = model.predict(xp.asarray(inputlist))
     outputlist.append(output)
     predictlist.append(y.data[0,0])
     error.append((output - y.data[0,0])*(output - y.data[0,0]))
@@ -69,7 +89,7 @@ price = tools.getClose(args.code,START_TEST_DAY)
 #print len(test)
 #print len(outputlist), len(predictlist) ,len(price)
 
-tools.listToCsv(str(args.tech)+str(args.code)+'.csv',price,outputlist,predictlist,error)
+tools.listToCsv('visuallizer' + str(args.code)+'.csv',price,outputlist,predictlist,error)
 #可視化
 #2軸使用
 fig, axis1 = plt.subplots()
