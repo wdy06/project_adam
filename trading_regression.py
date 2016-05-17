@@ -276,7 +276,7 @@ for f in files:
     print meigara_count
     print sum_profit_ratio / meigara_count
     #----------------csv出力用コード-------------    
-
+    
     data = []
     data.append(_time[:-NEXT_DAY+1])
     data.append(price[:-NEXT_DAY+1])
@@ -296,12 +296,17 @@ for f in files:
     fw.close()
 
     #------------------end-----------------
+    buy_order, sell_order = order2buysell(order,price[:-NEXT_DAY+1])
     #2軸使用
     fig, axis1 = plt.subplots()
     axis2 = axis1.twinx()
     axis1.set_ylabel('price')
+    axis1.set_ylabel('buy')
+    axis1.set_ylabel('sell')
     axis2.set_ylabel('property')
     axis1.plot(price, label = "price")
+    axis1.plot(buy_order,label='buy','o')
+    axis1.plot(sell_order,label='sell','^')
     axis1.legend(loc = 'upper left')
     axis2.plot(proper, label = 'property', color = 'g')
     axis2.legend()
