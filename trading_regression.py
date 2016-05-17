@@ -61,7 +61,7 @@ def predictToSignal_es(predictlist):
     signal = []
     upper_bound = []
     lower_bound = []
-    ratio = 0.3
+    ratio = 0.7
     param = 5
     es = ta.EMA(np.array(predictlist,dtype='f8'),timeperiod=param)
     for dth in es:
@@ -74,9 +74,9 @@ def predictToSignal_es(predictlist):
     for i,predict in enumerate(predictlist):
         if (es[i] == np.nan) or (i <= 5):
             signal.append(0)
-        elif (predictlist[i-1] <= upper_bound[i-1]) or (predictlist[i] >= upper_bound[i]):
+        elif (predictlist[i-1] <= upper_bound[i-1]) and (predictlist[i] >= upper_bound[i]):
             signal.append(1)
-        elif (predictlist[i-1] >= lower_bound[i-1]) or (predictlist[i] <=lower_bound[i]):
+        elif (predictlist[i-1] >= lower_bound[i-1]) and (predictlist[i] <=lower_bound[i]):
             signal.append(-1)
         else:
             signal.append(0)
@@ -305,8 +305,8 @@ for f in files:
     axis1.set_ylabel('sell')
     axis2.set_ylabel('property')
     axis1.plot(price, label = "price")
-    axis1.plot(buy_order,label='buy','o')
-    axis1.plot(sell_order,label='sell','^')
+    axis1.plot(buy_order,'o',label='buy')
+    axis1.plot(sell_order,'^',label='sell')
     axis1.legend(loc = 'upper left')
     axis2.plot(proper, label = 'property', color = 'g')
     axis2.legend()
