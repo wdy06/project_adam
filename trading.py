@@ -31,9 +31,9 @@ def getStrategy_RSI(start_trading_day,_time,_close):
     rsi = rsi[iday:]
     point.append(0)
     for i in range(1,len(rsi)):
-        if rsi[i] <= 30 and rsi[i - 1] > 20:
+        if (rsi[i] <= 30) and (rsi[i - 1] > 20):
             point.append(1)
-        elif rsi[i] >= 50 and rsi[i - 1] < 50:
+        elif (rsi[i] >= 50) and (rsi[i - 1] < 50):
             point.append(-1)
         else:
             point.append(0)
