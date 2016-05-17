@@ -23,7 +23,61 @@ def calcstocks(money, price):
         
     return 100 * (i - 1)
     
+    
+
+def trading(money,point,price):
+    proper = []
+    order = []
+    stocks = []
+    stock = 0
+    buyprice = 0
+    havestock = 0#株を持っている：１，持っていない：０
+    trading_count = 0#取引回数
+    #一日目は飛ばす
+    start_p = money#初期総資産
+    proper.append(start_p)
+    order.append(0)
+    stocks.append(0)
+    
+    
+    #trading loop
+    for i in range(1,len(point)):
+        if point[i] == 1:#buy_pointのとき
+            s = calcstocks(money, price[i])#現在の所持金で買える株数を計算
+            
+            if s != 0:#現在の所持金で株が買えるなら
+                havestock = 1
+                order.append(1)#買う
+                stock += s
+                buyprice = price[i]
+                money = money - s * buyprice
+            else:
+                order.append(0)#買わない
+                
+        elif point[i] == -1:#sell_pointのとき
+            if havestock == 1:#株を持っているなら
+                order.append(-1)#売る
+                money = money + stock * price[i]
+                trading_count += 1
+                stock = 0
+                havestock = 0
+            else:#株を持っていないなら
+                order.append(0)#何もしない
+                
+        else:#no_operationのとき
+            order.append(0)
         
+        _property = stock * price[i] + money
+        proper.append(_property)
+        stocks.append(stock)
+        end_p = _property#最終総資産
+        
+    profit_ratio = float((end_p - start_p) / start_p) * 100
+    
+    return profit_ratio, proper, order, stocks
+    
+
+
 start_trading_day = 20090105
 
 meigara_count = 0
@@ -39,27 +93,13 @@ sum_bh_profit_ratio = 0
 files = os.listdir("./stockdata")
 for f in files:
     print f
-    _time = []
-    _open = []
-    _max = []
-    _min = []
-    _close = []
-    _volume = []
-    _keisu = []
-    _shihon = []
     
     point = []
-    proper = []
-    order = []
-    stocks = []
+    
     
     _property = 0#総資産
     money = 1000000#所持金
-    allstock = 0#所持総株数
-    stock = 0
-    buyprice = 0
-    havestock = 0#株を持っている：１，持っていない：０
-    trading_count = 0#取引回数
+    
     filepath = "./stockdata/%s" % f
     #株価データの読み込み
     _time,_open,_max,_min,_close,_volume,_keisu,_shihon = make_dataset.readfile(filepath)
@@ -89,46 +129,8 @@ for f in files:
     #buy&holdの利益率を計算
     bh_profit_ratio = float((_close[-1] - _close[0]) / _close[0]) * 100
     
+    profit_ratio,proper,order,stocks = trading(money,point,_close)
     
-    #一日目は飛ばす
-    start_p = money#初期総資産
-    proper.append(start_p)
-    order.append(0)
-    stocks.append(0)
-    
-    #trading loop
-    for i in range(1,len(_close)):
-        if point[i] == 1:#buy_pointのとき
-            s = calcstocks(money, _close[i])#現在の所持金で買える株数を計算
-            
-            if s != 0:#現在の所持金で株が買えるなら
-                havestock = 1
-                order.append(1)#買う
-                stock += s
-                buyprice = _close[i]
-                money = money - s * buyprice
-            else:
-                order.append(0)#買わない
-                
-        elif point[i] == -1:#sell_pointのとき
-            if havestock == 1:#株を持っているなら
-                order.append(-1)#売る
-                money = money + stock * _close[i]
-                trading_count += 1
-                stock = 0
-                havestock = 0
-            else:#株を持っていないなら
-                order.append(0)#何もしない
-                
-        else:#no_operationのとき
-            order.append(0)
-        
-        _property = stock * _close[i] + money
-        proper.append(_property)
-        stocks.append(stock)
-        end_p = _property#最終総資産
-    
-    profit_ratio = float((end_p - start_p) / start_p) * 100
     print "profit of %s is %f " % (f, profit_ratio)
     tf.write(str(f) + " " + str(profit_ratio)+'\n')
     sum_profit_ratio += profit_ratio
@@ -136,7 +138,7 @@ for f in files:
     meigara_count += 1
     print meigara_count
     #----------------csv出力用コード-------------    
-   
+
     data = []
     data.append(_time)
     data.append(_close)
