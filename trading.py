@@ -24,7 +24,23 @@ def calcstocks(money, price):
     return 100 * (i - 1)
     
     
-
+def getStrategy_RSI(start_trading_day,_time,_close):
+    point = []
+    iday = _time.index(start_trading_day)
+    rsi = ta.RSI(np.array(_close,dtype='f8'),timeperiod=14)
+    rsi = rsi[iday:]
+    point.append(0)
+    for i in range(1,len(rsi)):
+        if rsi[i] <= 30 and rsi[i - 1] > 20:
+            point.append(1)
+        elif rsi[i] >= 50 and rsi[i - 1] < 50:
+            point.append(-1)
+        else:
+            point.append(0)
+            
+    return point
+    
+    
 def trading(money,point,price):
     proper = []
     order = []
@@ -107,24 +123,13 @@ for f in files:
         iday = _time.index(start_trading_day)
     except:
         print "can't find start_test_day"
-        continue#start_trading_dayが見つからなければ次のファイルへ    
+        continue#start_trading_dayが見つからなければ次のファイルへ   
+        
+    point = getStrategy_RSI(start_trading_day,_time,_close)
     
-    _close = np.array(_close, dtype='f8')
-    rsis = ta.RSI(_close, timeperiod=14)
     #売買開始日からスライス
     _time = _time[iday:]
     _close = _close[iday:]
-    rsis = rsis[iday:]
-    #売買ポイントを作成
-    point.append(NO_OPERATION)#一日目は何もしない
-    for i in range(1,len(rsis)):
-        if rsis[i] <= 30 and rsis[i - 1] > 20:
-            point.append(BUY_POINT)
-        elif rsis[i] >= 50 and rsis[i - 1] < 50:
-            point.append(SELL_POINT)
-        else:
-            point.append(NO_OPERATION)
-    
         
     #buy&holdの利益率を計算
     bh_profit_ratio = float((_close[-1] - _close[0]) / _close[0]) * 100
@@ -143,7 +148,6 @@ for f in files:
     data.append(_time)
     data.append(_close)
     data.append(proper)
-    data.append(rsis)
     data.append(point)
     data.append(order)
     data.append(stocks)
