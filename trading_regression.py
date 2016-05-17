@@ -57,11 +57,11 @@ def predictToSignal_ave(predictlist):
                 
     return signal
     
-def predictToSignal_es(predictlist):
+def predictToSignal_es(predictlist,bound_ratio):
     signal = []
     upper_bound = []
     lower_bound = []
-    ratio = 0.7
+    
     param = 5
     es = ta.EMA(np.array(predictlist,dtype='f8'),timeperiod=param)
     for dth in es:
@@ -69,8 +69,8 @@ def predictToSignal_es(predictlist):
             upper_bound.append(np.nan)
             lower_bound.append(np.nan)
         else:
-            upper_bound.append(dth + abs(dth)*ratio)
-            lower_bound.append(dth - abs(dth)*ratio)
+            upper_bound.append(dth + abs(dth)*bound_ratio)
+            lower_bound.append(dth - abs(dth)*bound_ratio)
     for i,predict in enumerate(predictlist):
         if (es[i] == np.nan) or (i <= 5):
             signal.append(0)
@@ -173,6 +173,7 @@ else:
     print ('make experiment folder')
     os.makedirs(ex_folder)
 tf = open(ex_folder + 'tradebymodel_log.txt','w')
+tf.write('model:'args.model)
 
 sum_profit_ratio = 0
 
@@ -222,7 +223,7 @@ for f in files:
     
     #売買ポイントを作成
     
-    point,upper,lower = predictToSignal_es(predictlist)
+    point,upper,lower = predictToSignal_es(predictlist,0.5)
     #print point
     #raw_input()
     price = _close[iday:]
@@ -335,4 +336,5 @@ print "profit average is = %f" % (sum_profit_ratio / meigara_count)
 print "all meigara is %d" % meigara_count
 tf.write("profit average is = " + str(sum_profit_ratio / meigara_count))
 tf.write("all meigara is " + str(meigara_count))
+tf.write('model:'args.model)
 tf.close()
