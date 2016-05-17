@@ -82,6 +82,22 @@ def predictToSignal_es(predictlist):
             signal.append(0)
     return signal,upper_bound,lower_bound
 
+def order2buysell(order,price):
+    buy_point = []
+    sell_point = []
+    for i,o in enumerate(order):
+        if o == 1:
+            buy_point.append(price[i])
+            sell_point.append(np.nan)
+        elif o == -1:
+            buy_point.append(np.nan)
+            sell_point.append(price[i])
+        elif o == 0:
+            buy_point.append(np.nan)
+            sell_point.append(np.nan)
+            
+    return buy_point, sell_point
+    
 parser = argparse.ArgumentParser(description='trading by learned model')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
