@@ -98,6 +98,58 @@ def order2buysell(order,price):
             
     return buy_point, sell_point
     
+def trading(money,point,price):
+    proper = []
+    order = []
+    stocks = []
+    stock = 0
+    buyprice = 0
+    havestock = 0#株を持っている：１，持っていない：０
+    trading_count = 0#取引回数
+    #一日目は飛ばす
+    start_p = money#初期総資産
+    proper.append(start_p)
+    order.append(0)
+    stocks.append(0)
+    
+    
+    #trading loop
+    for i in range(1,len(point)):
+        if point[i] == 1:#buy_pointのとき
+            s = calcstocks(money, price[i])#現在の所持金で買える株数を計算
+            
+            if s != 0:#現在の所持金で株が買えるなら
+                havestock = 1
+                order.append(1)#買う
+                stock += s
+                buyprice = price[i]
+                money = money - s * buyprice
+            else:
+                order.append(0)#買わない
+                
+        elif point[i] == -1:#sell_pointのとき
+            if havestock == 1:#株を持っているなら
+                order.append(-1)#売る
+                money = money + stock * price[i]
+                trading_count += 1
+                stock = 0
+                havestock = 0
+            else:#株を持っていないなら
+                order.append(0)#何もしない
+                
+        else:#no_operationのとき
+            order.append(0)
+        
+        _property = stock * price[i] + money
+        proper.append(_property)
+        stocks.append(stock)
+        end_p = _property#最終総資産
+        
+    profit_ratio = float((end_p - start_p) / start_p) * 100
+    
+    return profit_ratio, proper, order, stocks
+    
+    
 parser = argparse.ArgumentParser(description='trading by learned model')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
@@ -182,20 +234,10 @@ files = os.listdir("./stockdata")
 for f in files:
     print f
     
-    
-    point = []
-    proper = []
-    order = []
-    stocks = []
     predictlist = []
     
-    _property = 0#総資産
+    
     money = 1000000#所持金
-    allstock = 0#所持総株数
-    stock = 0
-    buyprice = 0
-    havestock = 0#株を持っている：１，持っていない：０
-    trading_count = 0#取引回数
     filepath = "./stockdata/%s" % f
     #株価データの読み込み
     _time,_open,_max,_min,_close,_volume,_keisu,_shihon = md.readfile(filepath)
@@ -230,47 +272,8 @@ for f in files:
     price = _close[iday:]
     _time = _time[iday:]
     
-    #print len(price),len(point)
-    #print 'please check'
-    #raw_input()
-    start_p = money#初期総資産
-    proper.append(start_p)
-    order.append(0)
-    stocks.append(0)
+    profit_ratio,proper,order,stocks = trading(money,point,price)
     
-    #trading loop
-    for i in xrange(1,len(point)):
-        if point[i] == 1:#buy_pointのとき
-            s = calcstocks(money, price[i])#現在の所持金で買える株数を計算
-            
-            if s != 0:#現在の所持金で株が買えるなら
-                havestock = 1
-                order.append(1)#買う
-                stock += s
-                buyprice = price[i]
-                money = money - s * buyprice
-            else:
-                order.append(0)#買わない
-                
-        elif point[i] == -1:#sell_pointのとき
-            if havestock == 1:#株を持っているなら
-                order.append(-1)#売る
-                money = money + stock * price[i]
-                trading_count += 1
-                stock = 0
-                havestock = 0
-            else:#株を持っていないなら
-                order.append(0)#何もしない
-                
-        else:#no_operationのとき
-            order.append(0)
-        
-        _property = stock * price[i] + money
-        proper.append(_property)
-        stocks.append(stock)
-        end_p = _property#最終総資産
-    
-    profit_ratio = float((end_p - start_p) / start_p) * 100
     print "profit of %s is %f " % (f, profit_ratio)
     tf.write(str(f) + " " + str(profit_ratio)+'\n')
     sum_profit_ratio += profit_ratio
