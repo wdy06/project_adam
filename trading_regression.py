@@ -160,7 +160,7 @@ SELL_POINT = -1
 NO_OPERATION = 0
 BTH = 0.05
 STH = -0.05
-
+bound_ratio = 0.5
 
 output_num = 1
 
@@ -173,7 +173,8 @@ else:
     print ('make experiment folder')
     os.makedirs(ex_folder)
 tf = open(ex_folder + 'tradebymodel_log.txt','w')
-tf.write('model:'args.model)
+tf.write('model:'+str(args.model))
+tf.write('bound_ratio:'+str(bound_ratio))
 
 sum_profit_ratio = 0
 
@@ -223,7 +224,7 @@ for f in files:
     
     #売買ポイントを作成
     
-    point,upper,lower = predictToSignal_es(predictlist,0.5)
+    point,upper,lower = predictToSignal_es(predictlist,bound_ratio)
     #print point
     #raw_input()
     price = _close[iday:]
@@ -336,5 +337,5 @@ print "profit average is = %f" % (sum_profit_ratio / meigara_count)
 print "all meigara is %d" % meigara_count
 tf.write("profit average is = " + str(sum_profit_ratio / meigara_count))
 tf.write("all meigara is " + str(meigara_count))
-tf.write('model:'args.model)
+tf.write('model:'+str(args.model))
 tf.close()
