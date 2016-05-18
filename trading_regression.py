@@ -328,7 +328,7 @@ for f in files:
     plt.savefig(pic_name)
     plt.close()
     
-    plt.plot(outputlist,label='_true')
+    
     plt.plot(predictlist,label='predict')
     plt.plot(upper,label='upper_bound')
     plt.plot(lower,label='lower_bound')
@@ -337,8 +337,12 @@ for f in files:
     plt.savefig(pic_name)
     plt.close()
     #print "save picture"
-    
-    
+    plt.plot(outputlist,label='_true')
+    plt.plot(predictlist,label='predict')
+    plt.legend(loc='upper left')
+    pic_name = ex_folder + str(f).replace(".CSV", "") + "true_predict.png"
+    plt.savefig(pic_name)
+    plt.close()
     #raw_input()
 
 print "profit average is = %f" % (sum_profit_ratio / meigara_count)
