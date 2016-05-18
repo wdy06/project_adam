@@ -235,7 +235,7 @@ for f in files:
     print f
     
     predictlist = []
-    
+    outputlist = []
     
     money = 1000000#所持金
     filepath = "./stockdata/%s" % f
@@ -260,7 +260,7 @@ for f in files:
         output = row[-output_num-2]
         inputlist = np.array([inputlist]).astype(np.float32)
         y = model.predict(xp.asarray(inputlist))
-        #outputlist.append(output)
+        outputlist.append(output)
         predictlist.append(y.data[0,0])
     
     
@@ -287,6 +287,7 @@ for f in files:
     data.append(price[:-NEXT_DAY+1])
     data.append(proper)
     data.append(point)
+    data.append(outputlist)
     data.append(predictlist)
     data.append(upper)
     data.append(lower)
@@ -325,9 +326,11 @@ for f in files:
     plt.savefig(pic_name)
     plt.close()
     
-    plt.plot(predictlist)
-    plt.plot(upper)
-    plt.plot(lower)
+    plt.plot(outputlist,label='_true')
+    plt.plot(predictlist,label='predict')
+    plt.plot(upper,label='upper_bound')
+    plt.plot(lower,label='lower_bound')
+    plt.legend(loc='upper left')
     pic_name = ex_folder + str(f).replace(".CSV", "") + "signal.png"
     plt.savefig(pic_name)
     plt.close()
