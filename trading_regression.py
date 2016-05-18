@@ -170,6 +170,8 @@ parser.add_argument('--u_stoch', '-stoch',type=int,default=0,
                     help='use stoch or no')
 parser.add_argument('--u_wil', '-wil',type=int,default=0,
                     help='use wil or no')
+parser.add_argument('--bound_ratio', '-br',type=float,default=0.5,
+                    help='bound ratio')
 args = parser.parse_args()
 
 if args.u_vol == 0: u_vol = False
@@ -212,7 +214,7 @@ SELL_POINT = -1
 NO_OPERATION = 0
 BTH = 0.05
 STH = -0.05
-bound_ratio = 0.5
+bound_ratio = args.bound_ratio
 
 output_num = 1
 
