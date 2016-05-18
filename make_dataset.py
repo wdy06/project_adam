@@ -1164,11 +1164,11 @@ def make_dataset_5(inputnum, tech_name = None, param1 = None, param2 = None, par
     print 'finished!!'
     
     
-def make_dataset_6(fname,inputnum,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
+def make_dataset_6(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
     print 'make_dataset_6'
     start_test_day = 20090105 
     input_num = inputnum
-    next_day = 5#何日後の値上がり率で判断するか
+    #next_day = 5#何日後の値上がり率で判断するか
     
     train_count = 0
     test_count = 0
@@ -1204,7 +1204,9 @@ if __name__ == '__main__':
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
-    make_dataset_6('volemarsistoch',30,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    make_dataset_6('vol2Ema_n10_',30,next_day=10,u_vol=True,u_ema=True)
+    make_dataset_6('volRsiStoch_n10_',30,next_day=10,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
     #make_dataset_6('ematest',30,u_ema=True)
     #make_dataset_6('ocirator',30,u_vol=True,u_rsi=True,u_stoch=True,u_wil=True)
