@@ -31,7 +31,7 @@ def getStrategy_RSI(start_trading_day,_time,_close):
     rsi = rsi[iday:]
     point.append(0)
     for i in range(1,len(rsi)):
-        if (rsi[i] <= 30) and (rsi[i - 1] > 20):
+        if (rsi[i] <= 30) and (rsi[i - 1] > 30):
             point.append(1)
         elif (rsi[i] >= 50) and (rsi[i - 1] < 50):
             point.append(-1)
@@ -40,6 +40,54 @@ def getStrategy_RSI(start_trading_day,_time,_close):
             
     return point
     
+def getStrategy_MACD(start_trading_day,_time,_close):
+    point = []
+    iday = _time.index(start_trading_day)
+    macd, signal,hist = ta.MACD(np.array(_close,dtype='f8'),fastperiod=12,slowperiod=26,signalperiod=9)
+    macd = macd[iday:]
+    signal = signal[iday:]
+    point.append(0)
+    for i in range(1,len(macd)):
+        if (macd[i-1] <= signal[i-1]) and (macd[i] >= signal[i]):
+            point.append(1)
+        elif (macd[i-1] >= signal[i-1]) and (macd[i] <= signal[i]):
+            point.append(-1)
+        else:
+            point.append(0)
+    return point
+    
+def getStrategy_GD(start_trading_day,_time,_close):
+    point = []
+    iday = _time.index(start_trading_day)
+    short_ema = ta.EMA(np.array(_close,dtype='f8'),timeperiod=10)
+    long_ema = ta.EMA(np.array(_close,dtype='f8'),timeperiod=25)
+    short_ema = short_ema[iday:]
+    long_ema = long_ema[iday:]
+    point.append(0)
+    for i in range(1,len(short_ema)):
+        if (short_ema[i-1] <= long_ema[i-1]) and (short_ema[i] >= long_ema[i]):
+            point.append(1)
+        elif (short_ema[i-1] >= long_ema[i-1]) and (short_ema[i] <= long_ema[i]):
+            point.append(-1)
+        else:
+            point.append(0)
+    return point
+    
+def getStrategy_STOCH(start_trading_day,_time,_close,_max,_min):
+    point = []
+    iday = _time.index(start_trading_day)
+    slowk,slowd = ta.STOCH(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), fastk_period = 5,slowk_period=3,slowd_period=3)
+    slowk = slowk[iday:]
+    slowd = slowd[iday:]
+    point.append(0)
+    for i in range(1,len(slowk)):
+        if (slowk[i-1] <= slowd[i-1]) and (slowk[i] >= slowd[i]) and (slowk[i] <= 30):
+            point.append(1)
+        elif (slowk[i-1] <= 50) and (slowk[i] >= 50):
+            point.append(-1)
+        else:
+            point.append(0)
+    return point
     
 def trading(money,point,price):
     proper = []
@@ -103,15 +151,16 @@ NO_OPERATION = 0
 
 tf = open('tradelog.txt','w')
 
-sum_profit_ratio = 0
+sum_profit_ratio_rsi = 0
+sum_profit_ratio_macd = 0
+sum_profit_ratio_gd = 0
+sum_profit_ratio_stoch = 0
+sum_profit_ratio_rsi = 0
 sum_bh_profit_ratio = 0
     
 files = os.listdir("./stockdata")
 for f in files:
     print f
-    
-    point = []
-    
     
     _property = 0#総資産
     money = 1000000#所持金
@@ -125,7 +174,10 @@ for f in files:
         print "can't find start_test_day"
         continue#start_trading_dayが見つからなければ次のファイルへ   
         
-    point = getStrategy_RSI(start_trading_day,_time,_close)
+    point_rsi = getStrategy_RSI(start_trading_day,_time,_close)
+    point_macd = getStrategy_MACD(start_trading_day,_time,_close)
+    point_gd = getStrategy_GD(start_trading_day,_time,_close)
+    point_stoch = getStrategy_STOCH(start_trading_day,_time,_close,_max,_min)
     
     #売買開始日からスライス
     _time = _time[iday:]
@@ -133,15 +185,32 @@ for f in files:
         
     #buy&holdの利益率を計算
     bh_profit_ratio = float((_close[-1] - _close[0]) / _close[0]) * 100
-    
-    profit_ratio,proper,order,stocks = trading(money,point,_close)
-    
-    print "profit of %s is %f " % (f, profit_ratio)
-    tf.write(str(f) + " " + str(profit_ratio)+'\n')
-    sum_profit_ratio += profit_ratio
     sum_bh_profit_ratio += bh_profit_ratio
+    
+    profit_ratio = trading(money,point_rsi,_close)
+    print "RSI profit of %s is %f " % (f, profit_ratio[0])
+    tf.write('RSI '+str(f) + " " + str(profit_ratio[0])+'\n')
+    sum_profit_ratio_rsi += profit_ratio[0]
+    
+    profit_ratio = trading(money,point_macd,_close)
+    print "MACD profit of %s is %f " % (f, profit_ratio[0])
+    tf.write('MACD '+str(f) + " " + str(profit_ratio[0])+'\n')
+    sum_profit_ratio_macd += profit_ratio[0]
+    
+    profit_ratio = trading(money,point_gd,_close)
+    print "GD profit of %s is %f " % (f, profit_ratio[0])
+    tf.write('GD '+str(f) + " " + str(profit_ratio[0])+'\n')
+    sum_profit_ratio_gd += profit_ratio[0]
+    
+    profit_ratio = trading(money,point_stoch,_close)
+    print "STOCH profit of %s is %f " % (f, profit_ratio[0])
+    tf.write('STOCH '+str(f) + " " + str(profit_ratio[0])+'\n')
+    sum_profit_ratio_stoch += profit_ratio[0]
+    
     meigara_count += 1
     print meigara_count
+    
+    """
     #----------------csv出力用コード-------------    
 
     data = []
@@ -182,11 +251,18 @@ for f in files:
     
     
     #raw_input()
-
-print "profit average is = %f" % (sum_profit_ratio / meigara_count)
+    """
+    
+print "RSI profit average is = %f" % (sum_profit_ratio_rsi / meigara_count)
+print "MACD profit average is = %f" % (sum_profit_ratio_macd / meigara_count)
+print "GD profit average is = %f" % (sum_profit_ratio_gd / meigara_count)
+print "STOCH profit average is = %f" % (sum_profit_ratio_stoch / meigara_count)
 print 'buy&hold profit = %f' % (sum_bh_profit_ratio / meigara_count)
 print "all meigara is %d" % meigara_count
-tf.write("rsi profit average is = " + str(sum_profit_ratio / meigara_count)+'\n')
+tf.write("rsi profit average is = " + str(sum_profit_ratio_rsi / meigara_count)+'\n')
+tf.write("macd profit average is = " + str(sum_profit_ratio_macd / meigara_count)+'\n')
+tf.write("gd profit average is = " + str(sum_profit_ratio_gd / meigara_count)+'\n')
+tf.write("stoch profit average is = " + str(sum_profit_ratio_stoch / meigara_count)+'\n')
 tf.write('buy&hold profit average is = ' + str(sum_bh_profit_ratio / meigara_count)+'\n')
 tf.write("all meigara is " + str(meigara_count)+'\n')
 tf.close()
