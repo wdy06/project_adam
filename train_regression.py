@@ -42,7 +42,8 @@ parser.add_argument('--input', '-in', default=60, type=int,
                     help='input node number')                    
 parser.add_argument('--hidden', '-hn', default=100, type=int,
                     help='hidden node number')
-                    
+parser.add_argument('--channel', '-c', default=1, type=int,
+                    help='data channel')
 args = parser.parse_args()
 if args.gpu >= 0:
     cuda.check_cuda_available()
@@ -86,10 +87,18 @@ elif args.arch == 'dnn_5':
     import dnn_5
     model = dnn_5.Regression_DNN(args.input, args.hidden)
     print 'model is dnn5'
+elif args.arch == 'dnn_6':
+    import dnn_6
+    model = dnn_6.Regression_DNN(args.input, args.hidden)
+    print 'model is dnn6'
 elif args.arch == 'cnn_5':
     import cnn_5
-    model = cnn_5.Regression_CNN(args.input)
+    model = cnn_5.Regression_CNN(args.channel)
     print 'model is cnn_5'
+elif args.arch == 'cnn_6':
+    import cnn_6
+    model = cnn_6.Regression_CNN(args.channel)
+    print 'model is cnn_6'
 else:
     raise ValueError('Invalid architecture name')
 
@@ -141,6 +150,7 @@ with open(folder + 'settings.txt', 'wb') as o:
     o.write('input:' + str(model.input_num) + '\n')
     o.write('hidden:' + str(model.hidden_num) + '\n')
     o.write('layer_num:' + str(model.layer_num) + '\n')
+    o.write('channel_num:' + str(args.channel) + '\n')
     o.write('batchsize:' + str(batchsize) + '\n')
     o.write(args.trainfile + ':' + args.testfile + '\n')
 N = len(x_train)
