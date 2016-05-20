@@ -174,6 +174,8 @@ def getMaxChagePrice(price_list):
     
     return predic_price
     
+def getMaxPrice(price_list):
+    return max(price_list)
 def getTeacherData(filename,start_test_day,next_day,input_num):
     traindata = []
     testdata = []
