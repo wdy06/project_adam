@@ -147,7 +147,7 @@ def trading(money,point,price):
         
     profit_ratio = float((end_p - start_p) / start_p) * 100
     
-    return profit_ratio, proper, order, stocks
+    return profit_ratio, proper, order, stocks,trading_count
     
 
 parser = argparse.ArgumentParser(description='trading by learned model')
