@@ -143,6 +143,7 @@ def trading(money,point,price):
 
 
 start_trading_day = 20090105
+#start_trading_day = 20100104
 
 meigara_count = 0
 BUY_POINT = 1
@@ -210,48 +211,7 @@ for f in files:
     meigara_count += 1
     print meigara_count
     
-    """
-    #----------------csv出力用コード-------------    
-
-    data = []
-    data.append(_time)
-    data.append(_close)
-    data.append(proper)
-    data.append(point)
-    data.append(order)
-    data.append(stocks)
     
-    data = np.array(data).transpose()
-    filename = "./result/result_" + f
-    fw = open(filename, 'w')
-    writer = csv.writer(fw)
-    writer.writerows(data)
-    fw.close()
-
-    #------------------end-----------------
-    #2軸使用
-    fig, axis1 = plt.subplots()
-    axis2 = axis1.twinx()
-    axis1.set_ylabel('price')
-    axis2.set_ylabel('property')
-    axis1.plot(_close, label = "price")
-    axis1.legend(loc = 'upper left')
-    axis2.plot(proper, label = 'property', color = 'g')
-    axis2.legend()
-    #plt.plot(_close, label = "close")
-    #plt.plot(rsis, label = "rsi")
-    #print len(_close)
-    #print len(sma)    
-    #plt.legend()
-    #print sma[10]
-    filename = "./result/result_" + str(f).replace(".csv", "") + ".png"
-    plt.savefig(filename)
-    plt.close()
-    #print "save picture"
-    
-    
-    #raw_input()
-    """
     
 print "RSI profit average is = %f" % (sum_profit_ratio_rsi / meigara_count)
 print "MACD profit average is = %f" % (sum_profit_ratio_macd / meigara_count)
