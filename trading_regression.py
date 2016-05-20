@@ -149,13 +149,15 @@ def trading(money,point,price):
     
     return profit_ratio, proper, order, stocks
     
-    
+
 parser = argparse.ArgumentParser(description='trading by learned model')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
 parser.add_argument('model', help='path of using model')
 parser.add_argument('--input_num', '-in', type=int,default=30,
                     help='input num')
+parser.add_argument('--next_dat', '-nd', type=int,default=5,
+                    help='predict next day')
 parser.add_argument('--experiment_name', '-n', default='experiment', type=str,
                     help='experiment name')
 parser.add_argument('--u_vol', '-vol',type=int,default=0,
@@ -206,7 +208,8 @@ if args.gpu >= 0:
     
     
 START_TEST_DAY = 20090105
-NEXT_DAY = 5
+#START_TEST_DAY = 20100104
+NEXT_DAY = args.next_day
 
 meigara_count = 0
 BUY_POINT = 1
