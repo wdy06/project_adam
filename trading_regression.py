@@ -156,7 +156,7 @@ parser.add_argument('--gpu', '-g', default=-1, type=int,
 parser.add_argument('model', help='path of using model')
 parser.add_argument('--input_num', '-in', type=int,default=30,
                     help='input num')
-parser.add_argument('--next_dat', '-nd', type=int,default=5,
+parser.add_argument('--next_day', '-nd', type=int,default=5,
                     help='predict next day')
 parser.add_argument('--experiment_name', '-n', default='experiment', type=str,
                     help='experiment name')
