@@ -89,7 +89,9 @@ price = tools.getClose(args.code,START_TEST_DAY)
 #print len(test)
 #print len(outputlist), len(predictlist) ,len(price)
 
-tools.listToCsv('visuallizer' + str(args.code)+'.csv',price,outputlist,predictlist,error)
+ema_error = ta.EMA(np.array(error,dtype='f8'),timeperiod=10)
+
+tools.listToCsv('visuallizer' + str(args.code)+'.csv',price,outputlist,predictlist,error,ema_error)
 #可視化
 #2軸使用
 fig, axis1 = plt.subplots()
