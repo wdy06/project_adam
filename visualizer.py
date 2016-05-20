@@ -75,7 +75,7 @@ predictlist = []
 error = []
 
 file = tools.codeToFname(args.code)
-
+folder = './visualizer/'
 
 train, test = md.getTeacherDataMultiTech(file,START_TEST_DAY,NEXT_DAY,args.input_num,stride=1,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
 
@@ -94,7 +94,7 @@ price = tools.getClose(args.code,START_TEST_DAY)
 
 ema_error = ta.EMA(np.array(error,dtype='f8'),timeperiod=10)
 
-tools.listToCsv('visuallizer' + str(args.code)+'.csv',price,outputlist,predictlist,error,ema_error)
+tools.listToCsv(folder+'visuallizer' + str(args.code)+'.csv',price,outputlist,predictlist,error,ema_error)
 #可視化
 #2軸使用
 fig, axis1 = plt.subplots()
