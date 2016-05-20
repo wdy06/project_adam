@@ -17,9 +17,6 @@ from chainer import computational_graph as c
 from chainer import cuda, Variable, FunctionSet, optimizers
 import chainer.functions  as F
 
-START_TEST_DAY = 20090105
-NEXT_DAY = 5
-output_num = 1
 
 parser = argparse.ArgumentParser(description='check result of model prediction')
 #parser.add_argument('checkfile', help='Path to check file name')
@@ -28,6 +25,7 @@ parser.add_argument('--gpu', '-g', default=-1, type=int,
 parser.add_argument('code', help='stock code you check')
 parser.add_argument('model', help='Path to model')
 parser.add_argument('input_num', help='model input number',type=int)
+parser.add_argument('--next_day','-nd',type=int,default=5 ,help='next day')
 parser.add_argument('--u_vol', '-vol',type=int,default=0,
                     help='use vol or no')
 parser.add_argument('--u_ema', '-ema',type=int,default=0,
@@ -54,6 +52,11 @@ if args.u_stoch == 0: u_stoch = False
 elif args.u_stoch == 1: u_stoch = True
 if args.u_wil == 0: u_wil = False
 elif args.u_wil == 1: u_wil = True
+
+START_TEST_DAY = 20090105
+NEXT_DAY = args.next_day
+output_num = 1
+
 
 #モデルの読み込み
 with open(args.model, 'rb') as m:
