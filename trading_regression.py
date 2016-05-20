@@ -234,8 +234,7 @@ tf.write('model:'+str(args.model))
 tf.write('bound_ratio:'+str(bound_ratio))
 
 sum_profit_ratio = 0
-profit_ratio_list = []
-trading_count_list = []
+
 files = os.listdir("./stockdata")
 for f in files:
     print f
@@ -278,15 +277,14 @@ for f in files:
     price = _close[iday:]
     _time = _time[iday:]
     
-    profit_ratio,proper,order,stocks,trading_count = trading(money,point,price)
+    profit_ratio,proper,order,stocks = trading(money,point,price)
     
     print "profit of %s is %f " % (f, profit_ratio)
     tf.write(str(f) + " " + str(profit_ratio)+'\n')
-    profit_ratio_list.append(profit_ratio)
-    trading_count_list.append(trading_count)
+    sum_profit_ratio += profit_ratio
     meigara_count += 1
     print meigara_count
-    print np.mean(profit_ratio_list)
+    print sum_profit_ratio / meigara_count
     #----------------csv出力用コード-------------    
     
     data = []
@@ -350,9 +348,9 @@ for f in files:
     plt.close()
     #raw_input()
 
-print "profit average is = %f" % (np.mean(profit_ratio_list))
+print "profit average is = %f" % (sum_profit_ratio / meigara_count)
 print "all meigara is %d" % meigara_count
-tf.write("profit average is = " + str(np.mean(profit_ratio_list))
+tf.write("profit average is = " + str(sum_profit_ratio / meigara_count))
 tf.write("all meigara is " + str(meigara_count))
 tf.write('model:'+str(args.model))
 tf.close()

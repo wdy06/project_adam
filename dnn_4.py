@@ -77,11 +77,11 @@ class Regression_DNN(chainer.FunctionSet):
         #print y_data
         x, t = chainer.Variable(x_data), chainer.Variable(y_data)
         #x, t = Variable(x_data), Variable(y_data)#mnist
-        h1 = F.dropout(F.tanh(self.fc1(x)), train=train)
+        h1 = F.dropout(F.relu(self.fc1(x)), train=train)
         #print h1.data
-        h2 = F.dropout(F.tanh(self.fc2(h1)), train=train)
+        h2 = F.dropout(F.relu(self.fc2(h1)), train=train)
         #print h2.data
-        h3 = F.dropout(F.tanh(self.fc3(h2)), train=train)
+        h3 = F.dropout(F.relu(self.fc3(h2)), train=train)
         #print h3.data        
         y = self.fc4(h3)
         #print y.data, t.data

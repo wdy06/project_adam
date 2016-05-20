@@ -159,7 +159,6 @@ N_test = len(y_test)
 
 print N
 
-iteration = 0
 n_epoch = args.epoch
 print 'epoch:', n_epoch
 
@@ -181,7 +180,6 @@ for epoch in range(1,n_epoch + 1):
         y_batch = xp.asarray(y_train[perm[i:i + batchsize]])
         #print count        
         count+=1
-        iteration+=1
         #print 'start backward'
         optimizer.zero_grads()
         loss = model.forward(x_batch, y_batch)
@@ -198,9 +196,7 @@ for epoch in range(1,n_epoch + 1):
             print('graph generated')
 
         
-        loss = float(loss.data) * len(y_batch)
-        sum_loss += loss
-        
+        sum_loss += float(loss.data) * len(y_batch)
         
     print('train mean loss={}'.format(
         sum_loss / N))
@@ -251,7 +247,7 @@ for epoch in range(1,n_epoch + 1):
             print 'save loss.csv'
             odata = []
             
-    if epoch % 100 == 0:
+    if epoch % 1000 == 0:
         print 'save model'
         model.to_cpu()
         with open(folder + 'model_' + str(epoch), 'wb') as o:
