@@ -173,7 +173,8 @@ def getMaxChagePrice(price_list):
     predic_price = price_list[rec.index(max(rec))]
     
     return predic_price
-    
+def getMaxPrice(price_list):
+    return max(price_list)
 def getTeacherData(filename,start_test_day,next_day,input_num):
     traindata = []
     testdata = []
@@ -560,7 +561,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,
         if len(term_prices) != next_day:
             break
         #print term_prices
-        predic_price = getMaxChagePrice(term_prices)
+        predic_price = getMaxPrice(term_prices)
         train_output.append((predic_price - now_price) / now_price)
     #raw_input()
     test_output = []
@@ -570,7 +571,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,
         term_prices = testprice[i:i + next_day]
         if len(term_prices) != next_day:
             break
-        predic_price = getMaxChagePrice(term_prices)
+        predic_price = getMaxPrice(term_prices)
         test_output.append((predic_price - now_price) / now_price)
         
     f_traindata = []
@@ -1204,9 +1205,12 @@ if __name__ == '__main__':
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
-    make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
-    make_dataset_6('vol2Ema_n10_',30,next_day=10,u_vol=True,u_ema=True)
-    make_dataset_6('volRsiStoch_n10_',30,next_day=10,u_vol=True,u_rsi=True,u_stoch=True)
+    make_dataset_6('volemarsistoch_m_n5_',30,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    make_dataset_6('volemarsistoch_m_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    #make_dataset_6('price_m_n5_',30,next_day=5)
+    #make_dataset_6('volemarsistoch_n15_',30,next_day=15,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    #make_dataset_6('vol2Ema_n15_',30,next_day=15,u_vol=True,u_ema=True)
+    #make_dataset_6('volRsiStoch_n15_',30,next_day=15,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
     #make_dataset_6('ematest',30,u_ema=True)
     #make_dataset_6('ocirator',30,u_vol=True,u_rsi=True,u_stoch=True,u_wil=True)

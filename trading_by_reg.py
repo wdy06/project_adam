@@ -60,7 +60,7 @@ def getNormTech(tech_name):
         make_dataset.normalizationArray(tech1,-100,0)
     elif tech_name == "VOL":
         tech1 = _volume
-        tech1 = np.ndarray.tolist(tech1)
+        #tech1 = np.ndarray.tolist(tech1)
         make_dataset.normalizationArray(tech1,min(_volume),max(_volume))
         
     if tech_name in ("MACD","STOCH",):
@@ -71,11 +71,17 @@ def getNormTech(tech_name):
 
 parser = argparse.ArgumentParser(description='trading by learned model')
 parser.add_argument('model', help='path of using model')
-parser.add_argument('--tech_name', '-t', default=None,
+parser.add_argument('--tech_name', '-t', type=str,default=None,
                     help='input tech name')
+parser.add_argument('--price_input_num', '-pn', type=int,default=30,
+                    help='input price num')
+parser.add_argument('--tech_input_num', '-tn', type=int,default=None,
+                    help='input tech num')
 args = parser.parse_args()
 
 tech_name = args.tech_name
+price_input_num = args.price_input_num
+tech_input_num = args.tech_input_num
 #モデルの読み込み
 with open(args.model, 'rb') as i:
     print "open " + args.model
@@ -88,11 +94,11 @@ meigara_count = 0
 BUY_POINT = 1
 SELL_POINT = -1
 NO_OPERATION = 0
-BTH = 1.05
-STH = 0.95
+BTH = 0.05
+STH = -0.05
 
 input_num = model.input_num #直近何日間を入力とするか
-print input_num
+
 ex_folder = './trading_result/'
 
 tf = open(ex_folder + 'tradebymodel_log.txt','w')
@@ -132,7 +138,6 @@ for f in files:
         print "can't find start_test_day"
         continue#start_trading_dayが見つからなければ次のファイルへ    
     
-    _close = np.array(_close, dtype='f8')
     
     if tech_name in ("EMA","RSI","WILLR","VOL"):
         tech1 = getNormTech(tech_name)
@@ -147,46 +152,51 @@ for f in files:
     price_max = max(_close[:iday])
     
     #売買開始日のモデル入力数前からスライス
-    datalist = _close[iday - input_num + 1:]
+    datalist = _close[iday - price_input_num + 1:]
     if len(datalist) < input_num:
         continue
     if tech_name in ("EMA","RSI","WILLR","VOL"):
-        tech1 = tech1[iday - input_num + 1:]
+        tech1 = tech1[iday - price_input_num + 1:]
     elif tech_name in ("MACD","STOCH"):
-        tech1 = tech1[iday - input_num + 1:]
-        tech2 = tech2[iday - input_num + 1:]
+        tech1 = tech1[iday - price_input_num + 1:]
+        tech2 = tech2[iday - price_input_num + 1:]
     #normalizationArray
     make_dataset.normalizationArray(datalist, price_min, price_max)
+    #print len(datalist)
     #売買ポイントを作成
     #point.append(NO_OPERATION)#一日目は何もしない
     for i, price in enumerate(datalist):
         if tech_name in ("EMA","RSI","WILLR","VOL"):
-            inputlist = datalist[i:i + input_num] + tech1[i:i + input_num]
+            inputlist = datalist[i:i + price_input_num] + tech1[i:i + tech_input_num]
+            #print input_num, len(inputlist)
+            #raw_input()
         elif tech_name in ("MACD","STOCH"):
-            inputlist = datalist[i:i + input_num] + tech1[i:i + input_num] + tech2[i:i + input_num]
+            inputlist = datalist[i:i + price_input_num] + tech1[i:i + tech_input_num] + tech2[i:i + tech_input_num]
         elif tech_name is None:
-            inputlist = datalist[i:i + input_num]
+            inputlist = datalist[i:i + price_input_num]
         
-        y = model.predict(np.array([inputlist]).astype(np.float32), train=False)
+        y = model.predict(np.array([inputlist]).astype(np.float32),1)
+        print y.data
         if y.data >= BTH:#buy
             point.append(1)
 
-        elif y.data <= 1:#sell
+        elif y.data <= STH:#sell
             point.append(-1)
 
         else:#no_ope
             point.append(0)
             
 
-        if i + input_num == len(datalist):
+        if i + price_input_num == len(datalist):
             break
     
     _time = _time[iday:]
     _close = _close[iday:]
 
     if len(_close) != len(point):
+        
         continue
-
+    print point
     start_p = money#初期総資産
     proper.append(start_p)
     order.append(0)
