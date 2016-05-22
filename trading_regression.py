@@ -352,7 +352,7 @@ for f in files:
 
 print "profit average is = %f" % (np.mean(profit_ratio_list))
 print "all meigara is %d" % meigara_count
-tf.write("profit average is = " + str(np.mean(profit_ratio_list))
+tf.write("profit average is = " + str(np.mean(profit_ratio_list)))
 tf.write("all meigara is " + str(meigara_count))
 tf.write('model:'+str(args.model))
 tf.close()
