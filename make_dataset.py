@@ -136,15 +136,15 @@ def arrange_train_num(inputfile, outputfile):
     writer = csv.writer(ocsvdata)
     print 'start no_ope_data appending...'
     for row in reader:
-        last = row[-1:]
+        label = row[-3]
         
-        if int(last[0]) == 0:
+        if int(label) == 0:
             c_buy +=1
             writer.writerow(row)
-        elif int(last[0]) == 1:
+        elif int(label) == 1:
             c_sell +=1
             writer.writerow(row)
-        elif int(last[0]) == 2:
+        elif int(label) == 2:
             data.append(row)
             c_no += 1
     
