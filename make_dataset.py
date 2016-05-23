@@ -166,7 +166,7 @@ def arrange_train_num(inputfile, outputfile):
     icsvdata.close()
     ocsvdata.close()
     print "end arrange"
-def getMaxChagePrice(price_list):
+def getMaxChangePrice(price_list):
     #リスト先頭の価格を基準にリスト内の価格で最も変動率が大きい価格を返す
     now_price = price_list[0]
     rec = [abs(x - now_price) for x in price_list]
@@ -1375,7 +1375,7 @@ def make_dataset_7(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_
     for k, f in enumerate(files):
         print f, k
         
-        train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,stride=stride,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
+        train, test = getTeacherDataMultiTech_label(f,start_test_day,next_day,input_num,stride=stride,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
         if (train == -1) or (test == -1):
             print 'skip',f
             continue
@@ -1401,7 +1401,7 @@ if __name__ == '__main__':
     #print "end!"
     #raw_input()
     #make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
-    make_dataset_7('vol2Ema_m_n5_',30,next_day=5,u_vol=True,u_ema=True)
+    make_dataset_7('vol2Ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
     #make_dataset_6('volRsiStoch_m_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
     #make_dataset_6('ematest',30,u_ema=True)
