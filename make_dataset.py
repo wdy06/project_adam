@@ -562,7 +562,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,
         if len(term_prices) != next_day:
             break
         #print term_prices
-        predic_price = getMaxChagePrice(term_prices)
+        predic_price = getMaxPrice(term_prices)
         train_output.append((predic_price - now_price) / now_price)
     #raw_input()
     test_output = []
@@ -572,8 +572,163 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,
         term_prices = testprice[i:i + next_day]
         if len(term_prices) != next_day:
             break
-        predic_price = getMaxChagePrice(term_prices)
+        predic_price = getMaxPrice(term_prices)
         test_output.append((predic_price - now_price) / now_price)
+        
+    f_traindata = []
+    
+    for i in range(0,len(traindata[0]),stride):
+        if i >= len(train_output):
+            break
+        rec = np.reshape(traindata[:,i:i+input_num],(1,-1))[0]
+        
+        rec = np.ndarray.tolist(rec)
+        f_traindata.append(rec + [train_output[i]] + [price_min] + [price_max])
+        
+    #print np.array(f_traindata).shape
+    
+    f_testdata = []
+    for i in range(0,len(testdata[0]),stride):
+        if i >= len(test_output):
+            break
+        rec = np.reshape(testdata[:,i:i+input_num],(1,-1))[0]
+        
+        rec = np.ndarray.tolist(rec)
+        f_testdata.append(rec + [test_output[i]] + [price_min] + [price_max])
+    #print np.array(f_testdata).shape
+    #raw_input()
+    return f_traindata,f_testdata
+    
+def getTeacherDataMultiTech_label(filename,start_test_day,next_day,input_num,stride=1,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):
+    
+    #株価と複数のテクニカル指標の教師データを作成し、そのリストを返す
+    all_data = []
+    traindata = []
+    testdata = []
+    #print tech_name
+    filepath = "./stockdata/%s" % filename
+    _time,_open,_max,_min,_close,_volume,_keisu,_shihon = readfile(filepath)
+
+    #start_test_dayでデータセットを分割
+    try:
+        iday = _time.index(start_test_day)
+    except:
+        print "can't find start_test_day"
+        #start_test_dayが見つからなければ次のファイルへ
+        return -1,-1
+    
+    cutpoint = iday - input_num + 1
+    
+    rec = copy.copy(_close)
+    price_min = min(_close)
+    price_max = max(_close)
+    normalizationArray(rec,price_min,price_max)
+    all_data.append(rec)
+    
+    
+    if u_vol == True:
+        vol_list = _volume
+        t_min = min(vol_list[:cutpoint])
+        t_max = max(vol_list[:cutpoint])
+        normalizationArray(vol_list,t_min,t_max)
+        all_data.append(vol_list)
+        
+    if u_ema == True:
+        ema_list1 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 10)
+        ema_list2 = ta.EMA(np.array(_close, dtype='f8'), timeperiod = 25)
+        ema_list1 = np.ndarray.tolist(ema_list1)
+        ema_list2 = np.ndarray.tolist(ema_list2)
+        t_min = min(_close[:cutpoint])
+        t_max = max(_close[:cutpoint])
+        
+        normalizationArray(ema_list1,t_min,t_max)
+        normalizationArray(ema_list2,t_min,t_max)
+        all_data.append(ema_list1)
+        all_data.append(ema_list2)
+        
+    if  u_rsi == True:
+        rsi_list = ta.RSI(np.array(_close, dtype='f8'), timeperiod = 14)
+        rsi_list = np.ndarray.tolist(rsi_list)
+        
+        normalizationArray(rsi_list,0,100)
+        all_data.append(rsi_list)
+        
+    if u_macd == True:
+        macd_list,signal,hist = ta.MACD(np.array(_close, dtype='f8'), fastperiod = 12, slowperiod = 26, signalperiod = 9)
+        macd_list = np.ndarray.tolist(macd_list)
+        signal = np.ndarray.tolist(signal)
+        
+        t_min = np.nanmin(macd_list[:cutpoint])
+        t_max = np.nanmax(macd_list[:cutpoint])
+        if (t_min == np.nan) or (t_max == np.nan):
+            return -1,-1
+        normalizationArray2(macd_list,t_min,t_max)
+        normalizationArray2(signal,t_min,t_max)
+        all_data.append(macd_list)
+        all_data.append(signal)
+        
+    if u_stoch == True:
+        slowk,slowd = ta.STOCH(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), fastk_period = 5,slowk_period=3,slowd_period=3)
+        slowk = np.ndarray.tolist(slowk)
+        slowd = np.ndarray.tolist(slowd)
+        normalizationArray(slowk,0,100)
+        normalizationArray(slowd,0,100)
+        all_data.append(slowk)
+        all_data.append(slowd)
+        
+    if u_wil == True:
+        will = ta.WILLR(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), timeperiod = 14)
+        will = np.ndarray.tolist(will)
+        normalizationArray(will,-100,0)
+        all_data.append(will)
+    
+    all_data = np.array(all_data)
+    
+    traindata = all_data[:,:cutpoint]
+    testdata = all_data[:,cutpoint:]
+    
+    trainprice = _close[:cutpoint]
+    testprice = _close[cutpoint:]
+    
+    #テクニカル指標のパラメータ日数分最初を切る
+    traindata = traindata[:,30:]
+    trainprice = trainprice[30:]
+    
+    if (len(traindata[0]) < input_num) or (len(testdata[0]) < input_num):
+        return -1,-1
+    
+    train_output = []
+    trainprice = trainprice[input_num - 1:]
+    for i,price in enumerate(trainprice):
+        now_price = price
+        term_prices = trainprice[i:i + next_day]
+        if len(term_prices) != next_day:
+            break
+        #print term_prices
+        predic_price = getMaxChangePrice(term_prices)
+        predic_ratio = (predic_price - now_price) / now_price
+        if predic_ratio > 0.05:
+            train_output.append(0)
+        elif predic_ratio < -0.05:
+            train_output.append(1)
+        else:
+            train_output.append(2)
+    #raw_input()
+    test_output = []
+    testprice = testprice[input_num - 1:]
+    for i,price in enumerate(testprice):
+        now_price = price
+        term_prices = testprice[i:i + next_day]
+        if len(term_prices) != next_day:
+            break
+        predic_price = getMaxChangePrice(term_prices)
+        predic_ratio = (predic_price - now_price) / now_price
+        if predic_ratio > 0.05:
+            test_output.append(0)
+        elif predic_ratio < -0.05:
+            test_output.append(1)
+        else:
+            test_output.append(2)
         
     f_traindata = []
     
@@ -1206,9 +1361,9 @@ if __name__ == '__main__':
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
-    make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
-    make_dataset_6('vol2Ema_n10_',30,next_day=10,u_vol=True,u_ema=True)
-    make_dataset_6('volRsiStoch_n10_',30,next_day=10,u_vol=True,u_rsi=True,u_stoch=True)
+    #make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    make_dataset_6('vol2Ema_m_n5_',30,next_day=5,u_vol=True,u_ema=True)
+    #make_dataset_6('volRsiStoch_m_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
     #make_dataset_6('ematest',30,u_ema=True)
     #make_dataset_6('ocirator',30,u_vol=True,u_rsi=True,u_stoch=True,u_wil=True)
