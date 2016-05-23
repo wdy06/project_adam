@@ -24,11 +24,12 @@ def calcstocks(money, price):
     return 100 * (i - 1)
     
     
-def getStrategy_RSI(start_trading_day,_time,_close):
+def getStrategy_RSI(start_trading_day,end_trading_day,_time,_close):
     point = []
     iday = _time.index(start_trading_day)
+    eday = _time.index(end_trading_day)
     rsi = ta.RSI(np.array(_close,dtype='f8'),timeperiod=14)
-    rsi = rsi[iday:]
+    rsi = rsi[iday:eday]
     point.append(0)
     for i in range(1,len(rsi)):
         if (rsi[i] <= 30) and (rsi[i - 1] > 30):
@@ -40,12 +41,13 @@ def getStrategy_RSI(start_trading_day,_time,_close):
             
     return point
     
-def getStrategy_MACD(start_trading_day,_time,_close):
+def getStrategy_MACD(start_trading_day,end_trading_day,_time,_close):
     point = []
     iday = _time.index(start_trading_day)
+    eday = _time.index(end_trading_day)
     macd, signal,hist = ta.MACD(np.array(_close,dtype='f8'),fastperiod=12,slowperiod=26,signalperiod=9)
-    macd = macd[iday:]
-    signal = signal[iday:]
+    macd = macd[iday:eday]
+    signal = signal[iday:eday]
     point.append(0)
     for i in range(1,len(macd)):
         if (macd[i-1] <= signal[i-1]) and (macd[i] >= signal[i]):
@@ -56,13 +58,14 @@ def getStrategy_MACD(start_trading_day,_time,_close):
             point.append(0)
     return point
     
-def getStrategy_GD(start_trading_day,_time,_close):
+def getStrategy_GD(start_trading_day,end_trading_day,_time,_close):
     point = []
     iday = _time.index(start_trading_day)
+    eday = _time.index(end_trading_day)
     short_ema = ta.EMA(np.array(_close,dtype='f8'),timeperiod=10)
     long_ema = ta.EMA(np.array(_close,dtype='f8'),timeperiod=25)
-    short_ema = short_ema[iday:]
-    long_ema = long_ema[iday:]
+    short_ema = short_ema[iday:eday]
+    long_ema = long_ema[iday:eday]
     point.append(0)
     for i in range(1,len(short_ema)):
         if (short_ema[i-1] <= long_ema[i-1]) and (short_ema[i] >= long_ema[i]):
@@ -73,12 +76,13 @@ def getStrategy_GD(start_trading_day,_time,_close):
             point.append(0)
     return point
     
-def getStrategy_STOCH(start_trading_day,_time,_close,_max,_min):
+def getStrategy_STOCH(start_trading_day,end_trading_day,_time,_close,_max,_min):
     point = []
     iday = _time.index(start_trading_day)
+    eday = _time.index(end_trading_day)
     slowk,slowd = ta.STOCH(np.array(_max, dtype='f8'),np.array(_min, dtype='f8'),np.array(_close, dtype='f8'), fastk_period = 5,slowk_period=3,slowd_period=3)
-    slowk = slowk[iday:]
-    slowd = slowd[iday:]
+    slowk = slowk[iday:eday]
+    slowd = slowd[iday:eday]
     point.append(0)
     for i in range(1,len(slowk)):
         if (slowk[i-1] <= slowd[i-1]) and (slowk[i] >= slowd[i]) and (slowk[i] <= 30):
@@ -142,7 +146,10 @@ def trading(money,point,price):
     
 
 
-start_trading_day = 20090105
+#start_trading_day = 20090105
+#end_trading_day = 20100104
+start_trading_day = 20100104
+end_trading_day = 20101229
 #start_trading_day = 20100104
 
 meigara_count = 0
@@ -171,18 +178,19 @@ for f in files:
     _time,_open,_max,_min,_close,_volume,_keisu,_shihon = make_dataset.readfile(filepath)
     try:
         iday = _time.index(start_trading_day)
+        eday = _time.index(end_trading_day)
     except:
         print "can't find start_test_day"
         continue#start_trading_dayが見つからなければ次のファイルへ   
         
-    point_rsi = getStrategy_RSI(start_trading_day,_time,_close)
-    point_macd = getStrategy_MACD(start_trading_day,_time,_close)
-    point_gd = getStrategy_GD(start_trading_day,_time,_close)
-    point_stoch = getStrategy_STOCH(start_trading_day,_time,_close,_max,_min)
+    point_rsi = getStrategy_RSI(start_trading_day,end_trading_day,_time,_close)
+    point_macd = getStrategy_MACD(start_trading_day,end_trading_day,_time,_close)
+    point_gd = getStrategy_GD(start_trading_day,end_trading_day,_time,_close)
+    point_stoch = getStrategy_STOCH(start_trading_day,end_trading_day,_time,_close,_max,_min)
     
     #売買開始日からスライス
-    _time = _time[iday:]
-    _close = _close[iday:]
+    _time = _time[iday:eday]
+    _close = _close[iday:eday]
         
     #buy&holdの利益率を計算
     bh_profit_ratio = float((_close[-1] - _close[0]) / _close[0]) * 100
