@@ -183,7 +183,7 @@ def arrange_train_num2(inputfile, outputfile):
     reader = csv.reader(icsvdata)
     writer = csv.writer(ocsvdata)
     print 'start no_ope_data appending...'
-    int count = 0
+    count = 0
     for row in reader:
         target = row[-3]
         count += 1
@@ -1423,7 +1423,7 @@ def make_dataset_6(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_
     print "test_count = %d" % test_count
     print 'finished!!'
     
-def make_dataset_7(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰 
+def make_dataset_7(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値でクラス分類
     print 'make_dataset_7'
     start_test_day = 20100104
     input_num = inputnum
@@ -1462,15 +1462,55 @@ def make_dataset_7(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_
     
     print 'finished!!'
     
+def make_dataset_8(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_rsi=False,u_macd=False,u_stoch=False,u_wil=False):#一定期間の株価,テクニカル指標から数日後の株価の最大値を回帰
+    #make_dataset_6の学習データ数調整版
+    print 'make_dataset_8'
+    start_test_day = 20100104
+    input_num = inputnum
+    #next_day = 5#何日後の値上がり率で判断するか
+    
+    train_count = 0
+    test_count = 0
+    fpath1 = t_folder + "tmp_train.csv"
+    fpath2 = t_folder + "tmp_test.csv"
+    fw1 = open(fpath1, 'w')
+    fw2 = open(fpath2, 'w')
+    writer1 = csv.writer(fw1, lineterminator='\n')
+    writer2 = csv.writer(fw2, lineterminator='\n')
+    
+    files = os.listdir("./stockdata")
+    for k, f in enumerate(files):
+        print f, k
+        
+        train, test = getTeacherDataMultiTech(f,start_test_day,next_day,input_num,stride=stride,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
+        if (train == -1) or (test == -1):
+            print 'skip',f
+            continue
+            
+        writer1.writerows(train)
+        writer2.writerows(test)
+            
+    fw1.close()
+    fw2.close()
+    print 'save ' + str(fpath1)
+    print 'save ' + str(fpath2)
+    print "train_count = %d" % train_count
+    print "test_count = %d" % test_count
+    
+    arrange_train_num2("tmp_train.csv", 'train_' + str(fname) + str(input_num) + '_reg.csv')
+    arrange_train_num2("tmp_test.csv", 'test_' + str(fname) +  str(input_num) + '_reg.csv') 
+    
+    print 'finished!!'
+    
 if __name__ == '__main__':
     print "start make dataset"
     #getTeacherDataTech('stock(9984).CSV',20090105,5,10,'EMA',10)
     #print "end!"
     #raw_input()
     #make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
-    make_dataset_7('vol2ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
-    make_dataset_7('volRsiStoch_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
-    make_dataset_7('volemarsistoch_n5_',30,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    make_dataset_8('vol2ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
+    #make_dataset_8('volRsiStoch_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
+    #make_dataset_8('volemarsistoch_n5_',30,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
     #make_dataset_7('vol2Ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
     #make_dataset_6('volRsiStoch_m_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
