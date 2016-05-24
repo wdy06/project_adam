@@ -166,6 +166,55 @@ def arrange_train_num(inputfile, outputfile):
     icsvdata.close()
     ocsvdata.close()
     print "end arrange"
+    
+def arrange_train_num2(inputfile, outputfile):
+    #regression teacher file arrange
+    print "start arrange..."
+    start_time = time.clock()
+    data = []
+    c_buy = 0
+    c_sell = 0
+    c_no = 0
+    print 'time:%d[s]' % (time.clock() - start_time)
+    print 'open ' + inputfile
+    icsvdata = open(t_folder + inputfile,'rb')
+    print 'open ' + outputfile
+    ocsvdata = open(t_folder + outputfile, 'w')
+    reader = csv.reader(icsvdata)
+    writer = csv.writer(ocsvdata)
+    print 'start no_ope_data appending...'
+    for row in reader:
+        label = row[-3]
+        
+        if int(label) == 0:
+            c_buy +=1
+            writer.writerow(row)
+        elif int(label) == 1:
+            c_sell +=1
+            writer.writerow(row)
+        elif int(label) == 2:
+            data.append(row)
+            c_no += 1
+    
+    print "buy %d, sell %d, no %d" % (c_buy, c_sell, c_no)
+    target_num = int((c_buy + c_sell) / 2)
+    #print target_num
+    print 'array shuffling...'
+    print 'time:%d[s]' % (time.clock() - start_time)
+    data = np.random.permutation(data)
+    data = data[:target_num]
+    print "arrange to"
+    print "buy %d, sell %d, no %d" % (c_buy, c_sell, len(data))
+    print 'no ope data writing...'
+    writer.writerows(data)
+    print 'time:%d[s]' % (time.clock() - start_time)
+    
+    
+    
+    icsvdata.close()
+    ocsvdata.close()
+    print "end arrange"
+    
 def getMaxChangePrice(price_list):
     #リスト先頭の価格を基準にリスト内の価格で最も変動率が大きい価格を返す
     now_price = price_list[0]
@@ -731,21 +780,32 @@ def getTeacherDataMultiTech_label(filename,start_test_day,next_day,input_num,str
             test_output.append(2)
         
     f_traindata = []
-    
+    count = 0
     for i in range(0,len(traindata[0]),stride):
         if i >= len(train_output):
             break
+        if train_output[i] == 2:
+            #何もしないは3回に一回
+            count +=1
+            if count % 3 != 0:
+                continue
         rec = np.reshape(traindata[:,i:i+input_num],(1,-1))[0]
         
         rec = np.ndarray.tolist(rec)
+        
         f_traindata.append(rec + [train_output[i]] + [price_min] + [price_max])
         
     #print np.array(f_traindata).shape
-    
+    count = 0
     f_testdata = []
     for i in range(0,len(testdata[0]),stride):
         if i >= len(test_output):
             break
+        if test_output[i] == 2:
+            #何もしないは3回に一回
+            count +=1
+            if count % 3 != 0:
+                continue
         rec = np.reshape(testdata[:,i:i+input_num],(1,-1))[0]
         
         rec = np.ndarray.tolist(rec)
@@ -1390,8 +1450,8 @@ def make_dataset_7(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_
     print "train_count = %d" % train_count
     print "test_count = %d" % test_count
     
-    arrange_train_num("tmp_train.csv", 'train_' + str(fname) + str(input_num) + 'class_.csv')
-    arrange_train_num("tmp_test.csv", 'test_' + str(fname) +  str(input_num) + 'class_.csv') 
+    arrange_train_num("tmp_train.csv", 'train_' + str(fname) + str(input_num) + '_class.csv')
+    arrange_train_num("tmp_test.csv", 'test_' + str(fname) +  str(input_num) + '_class.csv') 
     
     print 'finished!!'
     
@@ -1401,7 +1461,10 @@ if __name__ == '__main__':
     #print "end!"
     #raw_input()
     #make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
-    make_dataset_7('vol2Ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
+    make_dataset_7('vol2ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
+    make_dataset_7('volRsiStoch_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
+    make_dataset_7('volemarsistoch_n5_',30,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    #make_dataset_7('vol2Ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
     #make_dataset_6('volRsiStoch_m_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
     #make_dataset_6('ematest',30,u_ema=True)
