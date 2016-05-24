@@ -168,7 +168,7 @@ def arrange_train_num(inputfile, outputfile):
     print "end arrange"
     
 def arrange_train_num2(inputfile, outputfile):
-    #regression teacher file arrange
+    #regression teacher data arrange
     print "start arrange..."
     start_time = time.clock()
     data = []
@@ -183,16 +183,23 @@ def arrange_train_num2(inputfile, outputfile):
     reader = csv.reader(icsvdata)
     writer = csv.writer(ocsvdata)
     print 'start no_ope_data appending...'
+    int count = 0
     for row in reader:
-        label = row[-3]
-        
-        if int(label) == 0:
+        target = row[-3]
+        count += 1
+        if int(target) == 0:
+            if count % 10 == 0:
+                continue
             c_buy +=1
             writer.writerow(row)
-        elif int(label) == 1:
+        elif int(target) == 1:
+            if count % 10 == 0:
+                continue
             c_sell +=1
             writer.writerow(row)
-        elif int(label) == 2:
+        elif int(target) == 2:
+            if count % 2 == 0:
+                continue
             data.append(row)
             c_no += 1
     
@@ -214,7 +221,7 @@ def arrange_train_num2(inputfile, outputfile):
     icsvdata.close()
     ocsvdata.close()
     print "end arrange"
-    
+
 def getMaxChangePrice(price_list):
     #リスト先頭の価格を基準にリスト内の価格で最も変動率が大きい価格を返す
     now_price = price_list[0]
