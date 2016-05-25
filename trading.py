@@ -146,9 +146,9 @@ def trading(money,point,price):
     
 
 
-#start_trading_day = 20090105
+start_trading_day = 20090105
 #end_trading_day = 20100104
-start_trading_day = 20100104
+#tart_trading_day = 20100104
 end_trading_day = 20101229
 #start_trading_day = 20100104
 
