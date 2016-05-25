@@ -98,7 +98,7 @@ def order2buysell(order,price):
             
     return buy_point, sell_point
     
-def trading(money,point,price):
+def trading(money,price,point):
     proper = []
     order = []
     stocks = []
@@ -150,6 +150,7 @@ def trading(money,point,price):
     return profit_ratio, proper, order, stocks,trading_count
     
 
+
 parser = argparse.ArgumentParser(description='trading by learned model')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
@@ -158,8 +159,7 @@ parser.add_argument('--input_num', '-in', type=int,default=30,
                     help='input num')
 parser.add_argument('--next_day', '-nd', type=int,default=5,
                     help='predict next day')
-parser.add_argument('--experiment_name', '-n', default='experiment', type=str,
-                    help='experiment name')
+parser.add_argument('--experiment_name', '-n', default='experiment', type=str,help='experiment name')
 parser.add_argument('--u_vol', '-vol',type=int,default=0,
                     help='use vol or no')
 parser.add_argument('--u_ema', '-ema',type=int,default=0,
@@ -278,7 +278,7 @@ for f in files:
     price = _close[iday:]
     _time = _time[iday:]
     
-    profit_ratio,proper,order,stocks,trading_count = trading(money,point,price)
+    profit_ratio,proper,order,stocks,trading_count = trading(money,price,point)
     
     print "profit of %s is %f " % (f, profit_ratio)
     tf.write(str(f) + " " + str(profit_ratio)+'\n')
