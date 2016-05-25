@@ -135,6 +135,7 @@ def arrange_train_num(inputfile, outputfile):
     reader = csv.reader(icsvdata)
     writer = csv.writer(ocsvdata)
     print 'start no_ope_data appending...'
+    count = 0
     for row in reader:
         label = row[-3]
         
@@ -145,6 +146,8 @@ def arrange_train_num(inputfile, outputfile):
             c_sell +=1
             writer.writerow(row)
         elif int(label) == 2:
+            if count % 2 == 0:
+                continue
             data.append(row)
             c_no += 1
     
@@ -187,17 +190,17 @@ def arrange_train_num2(inputfile, outputfile):
     for row in reader:
         target = row[-3]
         count += 1
-        if int(target) == 0:
+        if float(target) >= 0.05:
             if count % 10 == 0:
                 continue
             c_buy +=1
             writer.writerow(row)
-        elif int(target) == 1:
+        elif float(target) <= -0.05:
             if count % 10 == 0:
                 continue
             c_sell +=1
             writer.writerow(row)
-        elif int(target) == 2:
+        else:
             if count % 2 == 0:
                 continue
             data.append(row)
@@ -618,7 +621,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,
         if len(term_prices) != next_day:
             break
         #print term_prices
-        predic_price = getMaxPrice(term_prices)
+        predic_price = getMaxChangePrice(term_prices)
         train_output.append((predic_price - now_price) / now_price)
     #raw_input()
     test_output = []
@@ -628,7 +631,7 @@ def getTeacherDataMultiTech(filename,start_test_day,next_day,input_num,stride=1,
         term_prices = testprice[i:i + next_day]
         if len(term_prices) != next_day:
             break
-        predic_price = getMaxPrice(term_prices)
+        predic_price = getMaxChangePrice(term_prices)
         test_output.append((predic_price - now_price) / now_price)
         
     f_traindata = []
@@ -787,15 +790,11 @@ def getTeacherDataMultiTech_label(filename,start_test_day,next_day,input_num,str
             test_output.append(2)
         
     f_traindata = []
-    count = 0
+    
     for i in range(0,len(traindata[0]),stride):
         if i >= len(train_output):
             break
-        if train_output[i] == 2:
-            #何もしないは3回に一回
-            count +=1
-            if count % 3 != 0:
-                continue
+        
         rec = np.reshape(traindata[:,i:i+input_num],(1,-1))[0]
         
         rec = np.ndarray.tolist(rec)
@@ -808,11 +807,7 @@ def getTeacherDataMultiTech_label(filename,start_test_day,next_day,input_num,str
     for i in range(0,len(testdata[0]),stride):
         if i >= len(test_output):
             break
-        if test_output[i] == 2:
-            #何もしないは3回に一回
-            count +=1
-            if count % 3 != 0:
-                continue
+        
         rec = np.reshape(testdata[:,i:i+input_num],(1,-1))[0]
         
         rec = np.ndarray.tolist(rec)
@@ -1411,10 +1406,12 @@ def make_dataset_6(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_
         if (train == -1) or (test == -1):
             print 'skip',f
             continue
-            
+        
+        test = test[:int(len(test)/2)]
         writer1.writerows(train)
         writer2.writerows(test)
-            
+        train_count += len(train)
+        test_count += len(test)
     fw1.close()
     fw2.close()
     print 'save ' + str(fpath1)
@@ -1489,7 +1486,8 @@ def make_dataset_8(fname,inputnum,next_day=5,stride=2,u_vol=False,u_ema=False,u_
             
         writer1.writerows(train)
         writer2.writerows(test)
-            
+        train_count += len(train)
+        test_count += len(test)
     fw1.close()
     fw2.close()
     print 'save ' + str(fpath1)
@@ -1508,9 +1506,9 @@ if __name__ == '__main__':
     #print "end!"
     #raw_input()
     #make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
-    make_dataset_8('vol2ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
-    #make_dataset_8('volRsiStoch_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
-    #make_dataset_8('volemarsistoch_n5_',30,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    #make_dataset_6('vol2ema_n5_',30,stride=4,next_day=5,u_vol=True,u_ema=True)
+    #make_dataset_6('volRsiStoch_n5_',30,stride=4,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
+    make_dataset_6('volemarsistoch_n5_',30,stride=4,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
     #make_dataset_7('vol2Ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
     #make_dataset_6('volRsiStoch_m_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
