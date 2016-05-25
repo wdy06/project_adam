@@ -31,10 +31,8 @@ import csv
 parser = argparse.ArgumentParser(description='Chainer example: MNIST')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
-parser.add_argument('--trainfile', '-f1', default='train.csv', type=str,
-                    help='train file name')
-parser.add_argument('--testfile', '-f2', default='test.csv', type=str,
-                    help='test file name')
+parser.add_argument('trainfile',help='train file name')
+parser.add_argument('testfile',help='test file name')
 parser.add_argument('--experiment_name', '-n', default='experiment', type=str,
                     help='experiment name')
 parser.add_argument('--epoch', '-E', default=2000, type=int,
@@ -48,7 +46,8 @@ parser.add_argument('--input', '-in', default=60, type=int,
                     help='input node number')                    
 parser.add_argument('--hidden', '-hn', default=100, type=int,
                     help='hidden node number')
-                    
+parser.add_argument('--channel', '-c', default=1, type=int,
+                    help='data channel')
 args = parser.parse_args()
 if args.gpu >= 0:
     cuda.check_cuda_available()
@@ -94,6 +93,14 @@ elif args.arch == 'dnn_5':
     import dnn_5
     model = dnn_5.Classification_DNN(args.input, args.hidden)
     print 'model is dnn5'
+elif args.arch == 'dnn_6':
+    import dnn_6
+    model = dnn_6.Classification_DNN(args.input, args.hidden)
+    print 'model is dnn6'
+elif args.arch == 'cnn_6':
+    import cnn_6
+    model = cnn_6.Classification_CNN(args.channel)
+    print 'model is cnn6'
 else:
     raise ValueError('Invalid architecture name')
 
@@ -115,15 +122,15 @@ print 'train_file is ' + args.trainfile
 csvdata = open(t_folder + args.trainfile,'rb')
 reader = csv.reader(csvdata)
 for row in reader:
-    x_train.append(row[:model.input_num])
-    y_train.append(row[-output_num:])
+    x_train.append(row[:-output_num-2])
+    y_train.append(row[-output_num-2:-2])
 csvdata.close()
 print 'test_file is ' + args.testfile
 csvdata = open(t_folder + args.testfile,'rb')
 reader = csv.reader(csvdata)
 for row in reader:
-    x_test.append(row[:model.input_num])
-    y_test.append(row[-output_num:])
+    x_test.append(row[:-output_num-2])
+    y_test.append(row[-output_num-2:-2])
 csvdata.close()
 
 
