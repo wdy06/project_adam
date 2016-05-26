@@ -146,6 +146,7 @@ with open(args.model, 'rb') as i:
     print 'load model'
 xp = cuda.cupy if args.gpu >= 0 else np
 START_TEST_DAY = 20090105
+#START_TEST_DAY = 20100104
 NEXT_DAY = args.next_day
 meigara_count = 0
 BUY_POINT = 1
@@ -166,7 +167,7 @@ tf = open(ex_folder + 'tradebymodel_log.txt','w')
 tf.write('model:'+str(args.model))
 
 sum_profit_ratio = 0
-
+profit_ratio_list = []
 files = os.listdir("./stockdata")
 for f in files:
     print f
@@ -217,15 +218,16 @@ for f in files:
     
     print "profit of %s is %f " % (f, profit_ratio)
     tf.write(str(f) + " " + str(profit_ratio)+'\n')
+    profit_ratio_list.append(profit_ratio)
     sum_profit_ratio += profit_ratio
     meigara_count += 1
     print meigara_count
-    print sum_profit_ratio / meigara_count
+    print np.mean(profit_ratio_list)
     #----------------csv出力用コード-------------    
    
     data = []
     data.append(_time[:-NEXT_DAY+1])
-    data.append(_close[:-NEXT_DAY+1])
+    data.append(price[:-NEXT_DAY+1])
     data.append(proper)
     data.append(point)
     data.append(order)
@@ -262,8 +264,10 @@ for f in files:
     
     #raw_input()
 
-print "profit average is = %f" % (sum_profit_ratio / meigara_count)
+print "profit average is = %f" % (np.mean(profit_ratio_list))
+print "model risk is = %f" % (np.var(profit_ratio_list))
 print "all meigara is %d" % meigara_count
-tf.write("profit average is = " + str(sum_profit_ratio / meigara_count))
+tf.write("profit average is = " + str(np.mean(profit_ratio_list)))
+tf.write("model risk is = " + str(np.var(profit_ratio_list)))
 tf.write("all meigara is " + str(meigara_count))
 tf.close()
