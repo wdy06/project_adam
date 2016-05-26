@@ -22,6 +22,7 @@ parser = argparse.ArgumentParser(description='check result of model prediction')
 #parser.add_argument('checkfile', help='Path to check file name')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
+parser.add_argument('mode',type=int, help='classification:0,regression:1')
 parser.add_argument('code', help='stock code you check')
 parser.add_argument('model', help='Path to model')
 parser.add_argument('input_num', help='model input number',type=int)
@@ -67,34 +68,57 @@ with open(args.model, 'rb') as m:
 if args.gpu >= 0:
     cuda.check_cuda_available()
     print "use gpu"
-    xp = cuda.cupy if args.gpu >= 0 else np
     model.to_gpu()
+    
+xp = cuda.cupy if args.gpu >= 0 else np
 
 outputlist = []
 predictlist = []
-error = []
+rec = []
 
 file = tools.codeToFname(args.code)
 folder = './visualizer/'
 
-train, test = md.getTeacherDataMultiTech(file,START_TEST_DAY,NEXT_DAY,args.input_num,stride=1,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
+if args.mode == 0:
 
-for row in test:
-    inputlist = row[:-output_num-2]
-    output = row[-output_num-2]
-    inputlist = np.array([inputlist]).astype(np.float32)
-    y = model.predict(xp.asarray(inputlist))
-    outputlist.append(output)
-    predictlist.append(y.data[0,0])
-    error.append((output - y.data[0,0])*(output - y.data[0,0]))
+    print 'classification'
+    train, test = md.getTeacherDataMultiTech_label(file,START_TEST_DAY,NEXT_DAY,args.input_num,stride=1,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
 
+    for row in test:
+        inputlist = row[:-output_num-2]
+        output = row[-output_num-2]
+        inputlist = np.array([inputlist]).astype(np.float32)
+        outputlist.append(output)
+        y = model.predict(xp.asarray(inputlist))
+        predictlist.append(y.data.argmax())
+        if y.data.argmax() == output:
+            rec.append(1)
+        elif y.data.argmax() != output:
+            rec.append(0)
+    
+
+elif args.mode == 1:
+
+    print 'regression'
+    train, test = md.getTeacherDataMultiTech(file,START_TEST_DAY,NEXT_DAY,args.input_num,stride=1,u_vol=u_vol,u_ema=u_ema,u_rsi=u_rsi,u_macd=u_macd,u_stoch=u_stoch,u_wil=u_wil)
+
+    for row in test:
+        inputlist = row[:-output_num-2]
+        output = row[-output_num-2]
+        inputlist = np.array([inputlist]).astype(np.float32)
+        outputlist.append(output)
+        y = model.predict(xp.asarray(inputlist))
+        predictlist.append(y.data[0,0])
+        rec.append((output - y.data[0,0])*(output - y.data[0,0]))
+            
+            
 price = tools.getClose(args.code,START_TEST_DAY)
 #print len(test)
 #print len(outputlist), len(predictlist) ,len(price)
 
-ema_error = ta.EMA(np.array(error,dtype='f8'),timeperiod=30)
+ema_list = ta.EMA(np.array(rec,dtype='f8'),timeperiod=60)
 
-tools.listToCsv(folder+'visuallizer' + str(args.code)+'.csv',price[:-NEXT_DAY+1],outputlist,predictlist,error,ema_error)
+tools.listToCsv(folder+'visuallizer' + str(args.code)+'.csv',price[:-NEXT_DAY+1],outputlist,predictlist,rec,ema_list)
 #可視化
 #2軸使用
 fig, axis1 = plt.subplots()
@@ -105,6 +129,7 @@ axis1.plot(price, label = "price")
 axis1.legend(loc = 'upper left')
 axis2.plot(outputlist, label = 'True', color = 'g')
 axis2.plot(predictlist, label = 'predict', color = 'r')
+axis2.plot(ema_list,label='ema',color='y')
 #axis2.plot(error, label = 'square error', color = 'm')
 axis2.legend()
 plt.show()
