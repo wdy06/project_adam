@@ -138,7 +138,7 @@ def arrange_train_num(inputfile, outputfile):
     count = 0
     for row in reader:
         label = row[-3]
-        
+        count += 1
         if int(label) == 0:
             c_buy +=1
             writer.writerow(row)
@@ -146,10 +146,11 @@ def arrange_train_num(inputfile, outputfile):
             c_sell +=1
             writer.writerow(row)
         elif int(label) == 2:
+            c_no += 1
             if count % 2 == 0:
                 continue
             data.append(row)
-            c_no += 1
+            
     
     print "buy %d, sell %d, no %d" % (c_buy, c_sell, c_no)
     target_num = int((c_buy + c_sell) / 2)
@@ -1508,7 +1509,7 @@ if __name__ == '__main__':
     #make_dataset_6('volemarsistoch_n10_',30,next_day=10,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('vol2ema_n5_',30,stride=4,next_day=5,u_vol=True,u_ema=True)
     #make_dataset_6('volRsiStoch_n5_',30,stride=4,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
-    make_dataset_6('volemarsistoch_n5_',30,stride=4,next_day=5,u_vol=True,u_ema=True,u_rsi=True,u_stoch=True)
+    make_dataset_7('priceonly_n5_',30,next_day=5)
     #make_dataset_7('vol2Ema_n5_',30,next_day=5,u_vol=True,u_ema=True)
     #make_dataset_6('volRsiStoch_m_n5_',30,next_day=5,u_vol=True,u_rsi=True,u_stoch=True)
     #make_dataset_6('macdtest',30,u_macd=True)
