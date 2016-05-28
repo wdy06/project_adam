@@ -47,14 +47,18 @@ def order2buysell(order,price):
             
     return buy_point, sell_point
     
-def getAccuray(answer,predict,timeperiod):
+def getAccuray(answer,predict,next_day,timeperiod):
+    #正解か確認できない期間分前を見る
     rec = []
+    for i in range(next_day):
+        rec.append(0)
+        
     for i in range(len(answer)):
         if predict[i] == answer[i]:
             rec.append(1)
         elif predict[i] != answer[i]:
             rec.append(0)
-    
+    rec = rec[:-next_day]
     acc_curve = ta.SMA(np.array(rec,dtype='f8'),timeperiod=timeperiod)
     return acc_curve
     
@@ -262,6 +266,8 @@ parser.add_argument('--input_num', '-in', type=int,default=30,
                     help='input num')
 parser.add_argument('--next_day', '-nd', type=int,default=5,
                     help='predict next day')
+parser.add_argument('--smooth_term', '-st', type=int,default=30,
+                    help='timeperiod to smooth accuray')
 parser.add_argument('--experiment_name', '-n', default='experiment', type=str,help='experiment name')
 
 args = parser.parse_args()
@@ -352,7 +358,7 @@ for f in files:
         elif y.data.argmax() == 2:#no_ope
             point_1.append(0)
             
-    acc_curve_1 = getAccuray(output_list,predict_list,60)
+    acc_curve_1 = getAccuray(output_list,predict_list,args.next_day,args.smooth_term)
     
     #model_2
     output_list = []
@@ -377,7 +383,7 @@ for f in files:
         elif y.data.argmax() == 2:#no_ope
             point_2.append(0)
             
-    acc_curve_2 = getAccuray(output_list,predict_list,60)
+    acc_curve_2 = getAccuray(output_list,predict_list,args.next_day,args.smooth_term)
 
     point = []
     point.append(point_1)
@@ -475,8 +481,10 @@ for f in files:
     plt.close()
     
 print "profit average is = %f" % (np.mean(profit_ratio_list))
+print "model risk is = %f" % (np.var(profit_ratio_list))
 print "all meigara is %d" % meigara_count
 tf.write("profit average is = " + str(np.mean(profit_ratio_list)))
+tf.write("model risk is = " + str(np.var(profit_ratio_list)))
 tf.write("all meigara is " + str(meigara_count))
 #tf.write('model:'+str(args.model))
 tf.close()
