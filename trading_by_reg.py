@@ -26,7 +26,7 @@ Created on Tue Dec  8 21:59:37 2015
 def calcstocks(money, price):
     i = 0
     _sum = 0
-    while _sum < money:
+    while _sum <= money:
         i = i + 1
         _sum = 100 * price * i
         
@@ -197,7 +197,7 @@ for f in files:
         if point[i] == 1:#buy_pointのとき
             s = calcstocks(money, _close[i])#現在の所持金で買える株数を計算
             
-            if s != 0:#現在の所持金で株が買えるなら
+            if s > 0:#現在の所持金で株が買えるなら
                 havestock = 1
                 order.append(1)#買う
                 stock += s

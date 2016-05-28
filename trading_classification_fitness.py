@@ -22,7 +22,7 @@ import tools
 def calcstocks(money, price):
     i = 0
     _sum = 0
-    while _sum < money:
+    while _sum <= money:
         i = i + 1
         _sum = 100 * price * i
         
@@ -82,7 +82,7 @@ def trading(money,price,point):
         if point[i] == 1:#buy_pointのとき
             s = calcstocks(money, price[i])#現在の所持金で買える株数を計算
             
-            if s != 0:#現在の所持金で株が買えるなら
+            if s > 0:#現在の所持金で株が買えるなら
                 havestock = 1
                 order.append(1)#買う
                 stock += s
@@ -156,7 +156,7 @@ def trading_fitness(money,price,update_term,sim_term,*point):
             if (point[j][i] == 1) and (fitness[j][i] > 0):#buy_pointのとき
                 #現在の所持金で買える株数を計算
                 s = calcstocks(money*(fitness[j][i]/sum_fitness), price[i])
-                if s != 0:#現在の所持金で株が買えるなら
+                if s > 0:#現在の所持金で株が買えるなら
                     havestock[j] = 1
                     order[j][i] = 1#買う
                     stock[j] += s
@@ -221,7 +221,7 @@ def trading_fitness2(money,price,fitness,point):
                 #現在の所持金で買える株数を計算
                 
                 s = calcstocks(money*(fitness[j][i]), price[i])
-                if s != 0:#現在の所持金で株が買えるなら
+                if s > 0:#現在の所持金で株が買えるなら
                     havestock[j] = 1
                     order[j][i] = 1#買う
                     stock[j] += s

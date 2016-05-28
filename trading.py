@@ -17,7 +17,7 @@ Created on Tue Dec  8 21:59:37 2015
 def calcstocks(money, price):
     i = 0
     _sum = 0
-    while _sum < money:
+    while _sum <= money:
         i = i + 1
         _sum = 100 * price * i
         
@@ -113,7 +113,7 @@ def trading(money,point,price):
         if point[i] == 1:#buy_pointのとき
             s = calcstocks(money, price[i])#現在の所持金で買える株数を計算
             
-            if s != 0:#現在の所持金で株が買えるなら
+            if s > 0:#現在の所持金で株が買えるなら
                 havestock = 1
                 order.append(1)#買う
                 stock += s
@@ -148,7 +148,7 @@ def trading(money,point,price):
 
 start_trading_day = 20090105
 #end_trading_day = 20100104
-#tart_trading_day = 20100104
+#start_trading_day = 20100104
 end_trading_day = 20101229
 #start_trading_day = 20100104
 
