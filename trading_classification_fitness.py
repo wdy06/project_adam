@@ -50,15 +50,16 @@ def order2buysell(order,price):
 def getAccuray(answer,predict,next_day,timeperiod):
     #正解か確認できない期間分前を見る
     rec = []
+    """
     for i in range(next_day):
         rec.append(0)
-        
+    """
     for i in range(len(answer)):
         if predict[i] == answer[i]:
             rec.append(1)
         elif predict[i] != answer[i]:
             rec.append(0)
-    rec = rec[:-next_day]
+    #rec = rec[:-next_day]
     acc_curve = ta.SMA(np.array(rec,dtype='f8'),timeperiod=timeperiod)
     return acc_curve
     
@@ -206,6 +207,7 @@ def trading_fitness2(money,price,fitness,point):
 
     #一日目は飛ばす
     start_p = money#初期総資産
+    _property = money
     proper.append(start_p)
     all_stock_list.append(0)
     
@@ -220,10 +222,18 @@ def trading_fitness2(money,price,fitness,point):
             if (point[j][i] == 1):#buy_pointのとき
                 #現在の所持金で買える株数を計算
                 
-                s = calcstocks(money*(fitness[j][i]), price[i])
-                if s > 0:#現在の所持金で株が買えるなら
+                s1 = calcstocks(money, price[i])
+                s2 = calcstocks(_property*fitness[j][i],price[i])
+                if s1 > 0:#現在の所持金で株が買えるなら
                     havestock[j] = 1
                     order[j][i] = 1#買う
+                    if s2 <= s1:
+                        #信頼度に基づいた株数で買えるなら
+                        s = s2
+                    elif s2 > s1:
+                        #足りないなら買える範囲で買う
+                        s = s1
+                        
                     stock[j] += s
                     buyprice[j] = price[i]
                     money = money - s * buyprice[j]
@@ -488,3 +498,4 @@ tf.write("model risk is = " + str(np.var(profit_ratio_list)))
 tf.write("all meigara is " + str(meigara_count))
 #tf.write('model:'+str(args.model))
 tf.close()
+
