@@ -402,13 +402,15 @@ for f in files:
     #print acc_curve_2
     for i in range(len(acc_curve_1)):
         sum_acc = acc_curve_1[i] + acc_curve_2[i]
-        if np.isnan(acc_curve_1[i]) or np.isnan(acc_curve_2[i]):
+        rec1 = acc_curve_1[i] / sum_acc
+        rec2 = acc_curve_2[i] / sum_acc
+        if np.isnan(rec1) or np.isnan(rec2):
             fitness_1.append(0.5)
             fitness_2.append(0.5)
             
         else:
-            fitness_1.append(acc_curve_1[i] / sum_acc)
-            fitness_2.append(acc_curve_2[i] / sum_acc)
+            fitness_1.append(rec1)
+            fitness_2.append(rec2)
             
     fitness = []
     fitness.append(fitness_1)
@@ -499,3 +501,8 @@ tf.write("all meigara is " + str(meigara_count))
 #tf.write('model:'+str(args.model))
 tf.close()
 
+plt.hist(profit_ratio_list,bins=50,range=(-100,300))
+plt.title("profit ratio Histgram")
+plt.xlabel("profit ratio")
+plt.ylabel("frequency")
+plt.savefig(ex_folder+args.experiment_name+'histgram.png')
